@@ -327,7 +327,7 @@ async function main() {
 
     // Status: 94% Active, 3% On Leave, 3% Inactive
     const statusRoll = random();
-    let status = EmploymentStatus.ACTIVE;
+    let status: EmploymentStatus = EmploymentStatus.ACTIVE;
     if (statusRoll > 0.97) status = EmploymentStatus.INACTIVE;
     else if (statusRoll > 0.94) status = EmploymentStatus.ON_LEAVE;
 
