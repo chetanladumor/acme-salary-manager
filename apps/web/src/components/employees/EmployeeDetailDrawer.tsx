@@ -14,6 +14,7 @@ import {
   Paper,
   Button,
   Collapse,
+  LinearProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PaidIcon from '@mui/icons-material/Paid';
@@ -26,6 +27,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
 import { formatCurrency, formatDate, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
 import { SalaryAdjustmentModal } from './SalaryAdjustmentModal';
@@ -281,6 +283,142 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
               </CardContent>
             </Card>
 
+            {/* Card 2.5: Annual Paid Leave Quotas & Attendance History */}
+            <Card>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <EventAvailableIcon color="primary" fontSize="small" />
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                      Leave Entitlement & Quotas
+                    </Typography>
+                  </Stack>
+                  <Chip
+                    label={`${employee.leaveBalances?.totalRemaining ?? 37} Days Available`}
+                    size="small"
+                    color="primary"
+                    sx={{ fontWeight: 700, height: 22, fontSize: '0.7rem' }}
+                  />
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Annual paid leave quotas. Leaves exceeding available balance automatically incur Loss of Pay (unpaid) salary cuts.
+                </Typography>
+
+                {/* Quota Progress Cards */}
+                <Stack spacing={1.5}>
+                  {/* Sick Leave */}
+                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                        🤒 Sick Leave
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                        {employee.leaveBalances?.sick.balance ?? 10} / {employee.leaveBalances?.sick.quota ?? 10} Days Left
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={((employee.leaveBalances?.sick.balance ?? 10) / (employee.leaveBalances?.sick.quota ?? 10)) * 100}
+                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0' }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
+                      Used: {employee.leaveBalances?.sick.used ?? 0} days (100% paid)
+                    </Typography>
+                  </Paper>
+
+                  {/* Casual Leave */}
+                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                        🏖️ Casual / Personal Leave
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669' }}>
+                        {employee.leaveBalances?.casual.balance ?? 12} / {employee.leaveBalances?.casual.quota ?? 12} Days Left
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      color="success"
+                      value={((employee.leaveBalances?.casual.balance ?? 12) / (employee.leaveBalances?.casual.quota ?? 12)) * 100}
+                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0' }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
+                      Used: {employee.leaveBalances?.casual.used ?? 0} days (100% paid)
+                    </Typography>
+                  </Paper>
+
+                  {/* Annual Leave */}
+                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                        ✈️ Annual Vacation
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#7C3AED' }}>
+                        {employee.leaveBalances?.annual.balance ?? 15} / {employee.leaveBalances?.annual.quota ?? 15} Days Left
+                      </Typography>
+                    </Stack>
+                    <LinearProgress
+                      variant="determinate"
+                      value={((employee.leaveBalances?.annual.balance ?? 15) / (employee.leaveBalances?.annual.quota ?? 15)) * 100}
+                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#7C3AED' } }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
+                      Used: {employee.leaveBalances?.annual.used ?? 0} days (100% paid)
+                    </Typography>
+                  </Paper>
+                </Stack>
+
+                {/* Recent Leave History Log */}
+                {employee.leaveHistory && employee.leaveHistory.length > 0 && (
+                  <Box sx={{ mt: 2.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1 }}>
+                      Recent Attendance & Leave History
+                    </Typography>
+                    <Stack spacing={1}>
+                      {employee.leaveHistory.map((lh) => (
+                        <Paper
+                          key={lh.id}
+                          elevation={0}
+                          sx={{
+                            p: 1.25,
+                            bgcolor: '#FFFFFF',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: 1.5,
+                            borderLeft: lh.isPaid ? '3px solid #10B981' : '3px solid #EF4444',
+                          }}
+                        >
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.8rem' }}>
+                                {lh.leaveType} LEAVE
+                              </Typography>
+                              <Chip
+                                label={lh.isPaid ? 'PAID PTO' : 'UNPAID (LOP)'}
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: '0.65rem',
+                                  fontWeight: 700,
+                                  bgcolor: lh.isPaid ? '#ECFDF5' : '#FEF2F2',
+                                  color: lh.isPaid ? '#047857' : '#B91C1C',
+                                }}
+                              />
+                            </Stack>
+                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                              {lh.daysCount} Day{lh.daysCount > 1 ? 's' : ''}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                            {formatDate(lh.startDate)} – {formatDate(lh.endDate)} • {lh.reason || 'Approved leave'}
+                          </Typography>
+                        </Paper>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Card 3: Salary Progression Timeline */}
             <Card>
               <CardContent sx={{ p: 2.5 }}>
@@ -483,13 +621,25 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                                   </Typography>
                                 </Stack>
 
-                                {/* Unpaid Leave */}
+                                {/* Paid Leave (PTO) */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body2" sx={{ color: '#059669' }}>
+                                    🟢 Paid Leaves (Covered by PTO):
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#059669' }}>
+                                    {payout.paidLeaveDays || 0} Day{(payout.paidLeaveDays || 0) === 1 ? '' : 's'} Covered ($0.00 deduction)
+                                  </Typography>
+                                </Stack>
+
+                                {/* Unpaid Leave (Loss of Pay) */}
                                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                                   <Typography variant="body2" sx={{ color: '#DC2626' }}>
-                                    🔴 Unpaid Leave:
+                                    🔴 Unpaid Leave (Loss of Pay):
                                   </Typography>
                                   <Typography variant="body2" sx={{ fontWeight: 600, color: leave > 0 ? '#DC2626' : '#64748B' }}>
-                                    - {formatCurrency(leave, payout.currency)}
+                                    {leave > 0
+                                      ? `- ${formatCurrency(leave, payout.currency)} (${payout.unpaidLeaveDays || 2} days @ ${formatCurrency(Math.round(gross / 22), payout.currency)}/day)`
+                                      : `- ${formatCurrency(0, payout.currency)} (0 days)`}
                                   </Typography>
                                 </Stack>
 

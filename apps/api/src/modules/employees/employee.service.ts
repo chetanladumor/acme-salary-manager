@@ -181,6 +181,10 @@ export class EmployeeService {
           orderBy: { payoutDate: 'desc' },
           take: 12,
         },
+        leaves: {
+          orderBy: { startDate: 'desc' },
+          take: 10,
+        },
       },
     });
 
@@ -224,6 +228,8 @@ export class EmployeeService {
         otherDeductions: Number(p.otherDeductions),
         totalDeductions: Number(p.totalDeductions),
         netSalary: Number(p.netSalary),
+        paidLeaveDays: p.paidLeaveDays || 0,
+        unpaidLeaveDays: p.unpaidLeaveDays || 0,
         currency: p.currency,
         status: p.status as 'PAID' | 'SCHEDULED',
         payoutDate: p.payoutDate.toISOString().split('T')[0],
@@ -250,6 +256,36 @@ export class EmployeeService {
         months: tenureMonths,
         totalMonths,
       },
+      leaveBalances: {
+        sick: {
+          quota: employee.sickLeaveQuota,
+          balance: employee.sickLeaveBalance,
+          used: Math.max(0, employee.sickLeaveQuota - employee.sickLeaveBalance),
+        },
+        casual: {
+          quota: employee.casualLeaveQuota,
+          balance: employee.casualLeaveBalance,
+          used: Math.max(0, employee.casualLeaveQuota - employee.casualLeaveBalance),
+        },
+        annual: {
+          quota: employee.annualLeaveQuota,
+          balance: employee.annualLeaveBalance,
+          used: Math.max(0, employee.annualLeaveQuota - employee.annualLeaveBalance),
+        },
+        totalRemaining: employee.sickLeaveBalance + employee.casualLeaveBalance + employee.annualLeaveBalance,
+      },
+      leaveHistory: (employee.leaves || []).map((l) => ({
+        id: l.id,
+        leaveType: l.leaveType,
+        startDate: l.startDate.toISOString().split('T')[0],
+        endDate: l.endDate.toISOString().split('T')[0],
+        daysCount: l.daysCount,
+        isPaid: l.isPaid,
+        status: l.status,
+        reason: l.reason,
+        month: l.month,
+        year: l.year,
+      })),
       currentSalary: activeSalary
         ? {
             id: activeSalary.id,

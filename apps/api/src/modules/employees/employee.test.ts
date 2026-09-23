@@ -140,6 +140,15 @@ describe('Employee Module API', () => {
       if (response.body.data.monthlyPayouts.length > 1) {
         expect(response.body.data.monthlyPayouts[1].status).toBe('PAID');
       }
+
+      // Leave balances & history
+      expect(response.body.data.leaveBalances).toBeDefined();
+      expect(response.body.data.leaveBalances.sick.quota).toBe(10);
+      expect(response.body.data.leaveBalances.casual.quota).toBe(12);
+      expect(response.body.data.leaveBalances.annual.quota).toBe(15);
+      expect(response.body.data.leaveBalances.totalRemaining).toBeGreaterThan(0);
+      expect(response.body.data.leaveHistory).toBeInstanceOf(Array);
+      expect(response.body.data.leaveHistory.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should return 404 for non-existent employee', async () => {

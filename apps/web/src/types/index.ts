@@ -51,6 +51,34 @@ export interface SalaryHistoryItem {
   createdAt: string;
 }
 
+export type LeaveType = 'SICK' | 'CASUAL' | 'ANNUAL' | 'UNPAID';
+
+export interface LeaveCategoryBalance {
+  quota: number;
+  balance: number;
+  used: number;
+}
+
+export interface LeaveBalances {
+  sick: LeaveCategoryBalance;
+  casual: LeaveCategoryBalance;
+  annual: LeaveCategoryBalance;
+  totalRemaining: number;
+}
+
+export interface LeaveHistoryItem {
+  id: string;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  daysCount: number;
+  isPaid: boolean;
+  status: 'APPROVED' | 'PENDING' | 'REJECTED';
+  reason?: string;
+  month: number;
+  year: number;
+}
+
 export interface MonthlyPayoutItem {
   id: string;
   month: string;
@@ -62,6 +90,8 @@ export interface MonthlyPayoutItem {
   otherDeductions?: number;
   totalDeductions?: number;
   netSalary?: number;
+  paidLeaveDays?: number;
+  unpaidLeaveDays?: number;
   currency: string;
   status: 'PAID' | 'SCHEDULED';
   payoutDate: string;
@@ -77,6 +107,8 @@ export interface EmployeeDetail extends EmployeeListItem {
   };
   salaryHistory: SalaryHistoryItem[];
   monthlyPayouts?: MonthlyPayoutItem[];
+  leaveBalances?: LeaveBalances;
+  leaveHistory?: LeaveHistoryItem[];
   createdAt: string;
   updatedAt: string;
 }
