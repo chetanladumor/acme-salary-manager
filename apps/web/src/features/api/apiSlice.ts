@@ -10,10 +10,15 @@ import {
   AnalyticsOverview,
 } from '../../types';
 
+const rawApiUrl = (import.meta as any).env?.VITE_API_URL;
+const baseUrl = rawApiUrl
+  ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api`)
+  : '/api';
+
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api',
+    baseUrl,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) {
