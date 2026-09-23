@@ -4,6 +4,7 @@ node_modules/
 # Production Build Outputs
 dist/
 build/
+*.tsbuildinfo
 
 # Environment Variables & Secrets
 .env

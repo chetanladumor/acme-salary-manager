@@ -1,0 +1,29 @@
+{
+  "name": "acme-salary-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "High-performance employee compensation management and pay analytics system",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "keywords": [
+    "salary-management",
+    "hris",
+    "compensation-analytics",
+    "monorepo",
+    "express",
+    "react",
+    "postgresql",
+    "prisma"
+  ],
+  "author": "ChetanKumar Ladumor <ladumorchetan@yahoo.com>",
+  "license": "UNLICENSED"
+}
