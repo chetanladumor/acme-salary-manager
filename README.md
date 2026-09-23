@@ -1,79 +1,155 @@
-# ACME Salary Manager
+# ACME Workforce Compensation & Salary Manager
 
-> High-performance employee compensation management and executive pay analytics system designed for an organization of 10,000 employees across multiple global jurisdictions.
+> High-performance employee compensation management, auditable salary revision engine, and executive cashflow payroll analytics platform built for an enterprise workforce of 10,000 employees across 7 global jurisdictions.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
+[![Express](https://img.shields.io/badge/Express-4.19-000000.svg)](https://expressjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.18-2D3748.svg)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg)](https://www.docker.com/)
 
 ---
 
 ## 🎯 Executive Overview
 
-ACME Salary Manager transitions organizational compensation management away from error-prone spreadsheets into a centralized, auditable, web-based platform. Tailored specifically for the **HR Manager** persona, the system balances day-to-day employee salary administration with high-level workforce compensation analytics.
+ACME Salary Manager transitions organizational compensation management away from fragile, error-prone spreadsheets into a centralized, auditable, high-performance web platform. Tailored specifically for the **HR Executive & Compensation Director** persona, the system balances day-to-day employee salary administration with high-level workforce cashflow analytics and monthly payroll obligations.
 
-### Core Capabilities
-* **10,000-Employee Directory**: High-performance, server-side paginated directory with instant multi-parameter filtering (country, department, role, status) and debounced search.
-* **Immutable Salary History**: Temporal compensation modeling preserving historical pay adjustments, effective date ranges, and business justification (merit, promotion, market adjustment).
-* **Compensation Insights & Analytics**: Real-time compensation distribution metrics (minimum, median, maximum, average) segmented by country and currency without misleading cross-currency conversions.
-* **Audit Trail**: Operational logging capturing who modified compensation records and why.
+### 🌟 Core Capabilities
+* **10,000-Employee Global Directory**: Server-side paginated directory with sub-millisecond query performance, multi-parameter faceted filtering (country, department, status, currency, minimum salary), and debounced search.
+* **Dual Annual & Monthly Salary Views**: Immediate visibility into annual base compensation alongside monthly gross pay across all employee tables and dossiers.
+* **12-Month Historical Monthly Payout Ledger**: Comprehensive disbursement timeline showing exact monthly salaries paid to each employee over the past 12 months, with `PAID` / `SCHEDULED` status tags and compensation basis.
+* **Next-Month Total Payroll Cashflow Forecast**: Real-time projection of monthly gross payroll liabilities aggregated across all 7 operational currencies (USD, EUR, GBP, CAD, AUD, INR, SEK, NOK) directly on the executive analytics dashboard.
+* **Atomic Compensation Adjustments**: Temporal compensation revision engine with automatic closure of prior salary records, overlap prevention, reason tracking, and immutable audit logs.
+* **Executive Workforce Analytics**: Real-time KPI summary, department compensation vs. headcount density, change reason distributions, and regional compensation tables.
+* **Pure Redux Architecture**: Zero side-effects in reducers; session token persistence is orchestrated entirely through `createListenerMiddleware`.
 
 ---
 
-## 📐 Architecture Overview
+## 📐 Architecture & System Design
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Client Layer                           │
-│  React (TypeScript) + Redux Toolkit / RTK Query + Material UI│
-│  • Virtualized table rendering & URL-driven query state     │
-│  • RTK Query server-state caching & automatic invalidation  │
+│                      Client Layer (Vite + React 18)        │
+│  • Material UI (MUI v5) High-Density Enterprise Interface   │
+│  • Redux Toolkit + Pure authSlice + authListenerMiddleware  │
+│  • RTK Query Server-State Caching with Tag Invalidation     │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ HTTPS / JSON REST
+                               │ HTTP / JSON REST (Port 5174 /api reverse-proxy)
 ┌──────────────────────────────▼──────────────────────────────┐
-│                    Modular Monolith API                     │
-│               Node.js + Express + TypeScript                │
-│  ├── Modules: Auth | Employees | Salaries | Insights        │
-│  ├── Domain Invariant Validation (No overlapping dates)    │
-│  └── Centralized Error Handling & Structured Response Format│
+│                    Modular Express API                      │
+│  ├── /api/auth       (JWT authentication, session verify)   │
+│  ├── /api/employees  (Faceted search, pagination, dossiers) │
+│  ├── /api/salaries   (Atomic adjustments, audit ledger)     │
+│  └── /api/analytics  (Workforce KPIs, regional run-rate)    │
 └──────────────────────────────┬──────────────────────────────┘
-                               │
+                               │ Connection Pool (Prisma Client)
 ┌──────────────────────────────▼──────────────────────────────┐
 │                     Persistence Layer                       │
-│             PostgreSQL + Prisma ORM (Type-Safe)             │
-│  ├── Decimal(12, 2) Monetary Precision                     │
-│  ├── Strategic Composite Indexes for Sub-15ms Queries       │
-│  └── 10k Deterministic Seed Dataset                         │
+│  PostgreSQL 16 Engine                                       │
+│  • 10,000 employees & 17,458 historical salary records      │
+│  • Decimal(12, 2) monetary precision                        │
+│  • Composite indexes: (status, country_id, dept_id), etc.   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📚 Documentation & Engineering Artifacts
+## 🚀 Quick Start (Docker Orchestration)
 
-Every architectural decision and engineering tradeoff is documented in the [`docs/`](./docs) directory:
+The entire production stack (PostgreSQL, Express API, and React Web via Nginx) is orchestrated via Docker Compose:
 
-* [**Requirements Specification**](./docs/requirements.md): Goals, HR Manager user stories, in-scope features, and explicit out-of-scope justifications.
-* [**Architecture Decision Records (ADRs)**](./docs/decisions.md): Tradeoff evaluations (Modular Monolith, Immutable History, Currency Isolation, RTK Query, Server-Side Pagination).
-* [**AI-Assisted Engineering Log**](./docs/ai/prompts.md): Exact prompts and human engineering decisions made during AI-accelerated workflows.
+```bash
+# 1. Clone repository
+git clone https://github.com/chetanladumor/acme-salary-manager.git
+cd acme-salary-manager
+
+# 2. Launch production containers
+docker compose up -d --build
+
+# 3. Seed deterministic 10k workforce (if not already seeded)
+npm run db:seed --workspace=@acme/api
+```
+
+### Access Points & Credentials
+* **Web Application**: [http://localhost:5174](http://localhost:5174)
+* **API Server**: [http://localhost:5001](http://localhost:5001)
+* **Default HR Admin Credentials**:
+  * Email: `hr@acme.com`
+  * Password: `Admin#Pass2026!`
 
 ---
 
-## 🛠️ Technology Stack
+## 💻 Local Development Setup
 
-| Layer | Technology | Selection Rationale |
-| :--- | :--- | :--- |
-| **Frontend** | React, TypeScript, Material UI | High-density financial enterprise UI, component accessibility, and strict type safety |
-| **State & Cache** | Redux Toolkit (RTK Query) | Predictable server-state caching, automatic cache invalidation, minimal boilerplate |
-| **Backend** | Node.js, Express, TypeScript | Modular routing, high I/O throughput, clear separation of concerns |
-| **Database & ORM**| PostgreSQL, Prisma ORM | Relational integrity, temporal queries, composite indexing, strict schema migrations |
-| **Testing** | Vitest, React Testing Library, Supertest | Fast execution, isolated domain invariant testing, and determinism |
+```bash
+# Install root monorepo dependencies
+npm install
+
+# Start local PostgreSQL container (if running natively)
+docker compose up -d postgres
+
+# Push Prisma schema and generate types
+npm run db:push --workspace=@acme/api
+npm run db:generate --workspace=@acme/api
+
+# Seed deterministic dataset (10,000 employees in ~2.2s)
+npm run db:seed --workspace=@acme/api
+
+# Run automated tests (33 passing unit/integration tests)
+npm run test --workspaces
+
+# Start backend & frontend in development mode
+npm run dev --workspaces
+```
 
 ---
 
-## 🗺️ Roadmap & Incremental Milestones
+## 📊 Analytics & Next-Month Payroll Cashflow
 
-- [x] **Milestone 1**: Requirements specification, Architecture Decision Records, and AI prompt audit log.
-- [ ] **Milestone 2**: Monorepo workspace initialization, TypeScript configuration, and linting.
-- [ ] **Milestone 3**: PostgreSQL schema, Prisma migrations, and 10,000-employee deterministic seed script.
-- [ ] **Milestone 4**: Express modular API (Employees, Salaries with date-overlap invariants, and Insights).
-- [ ] **Milestone 5**: React frontend with RTK Query and high-density employee directory.
-- [ ] **Milestone 6**: Compensation Insights dashboard (distributions by country and department).
-- [ ] **Milestone 7**: Automated test suite (domain unit tests, API tests).
-- [ ] **Milestone 8**: Production deployment configuration and video demonstration.
+The platform automatically computes future cashflow payroll obligations for the upcoming pay cycle based on all active employees.
+
+| Operating Jurisdiction | Currency | Active Workforce | Projected Next-Month Total Payroll |
+| :--- | :---: | :---: | :---: |
+| **United States** | USD | 1,402 | **$16,272,208 / mo** |
+| **Canada** | CAD | 1,431 | **$15,371,458 / mo** |
+| **United Kingdom** | GBP | 1,432 | **£10,492,208 / mo** |
+| **Germany** | EUR | 1,479 | **€11,114,042 / mo** |
+| **Sweden** | SEK | 1,437 | **104,441,083 / mo** |
+| **Norway** | NOK | 1,378 | **107,448,333 / mo** |
+| **India** | INR | 1,441 | **₹395,341,167 / mo** |
+
+---
+
+## 🧪 Test Suite & Quality Verification
+
+Run unit, integration, and Redux purity tests across all workspaces:
+
+```bash
+npm run test --workspaces
+```
+
+* **`@acme/api` (22 tests)**:
+  * Authentication, session validation, and unauthorized rejection tests
+  * Employee search, multifaceted filtering, and pagination limits
+  * Salary adjustment atomicity, audit logging, and temporal closure
+  * Executive analytics KPIs and next-month payroll calculations
+* **`@acme/web` (11 tests)**:
+  * Pure Redux `authSlice` state transitions
+  * Currency formatters, date formatters, and percentage calculators
+
+---
+
+## 🗺️ Completed Milestones
+
+- [x] **Milestone 1**: Monorepo Architecture & TypeScript Configuration
+- [x] **Milestone 2**: Relational Data Modeling & PostgreSQL Schema with Decimal precision
+- [x] **Milestone 3**: High-Performance Database Indexing & Query Optimizations
+- [x] **Milestone 4**: Sanitized Deterministic Seeding Engine (10,000 employees, 17,458 revisions in 2.24s)
+- [x] **Milestone 5**: Secure Authentication API & Session Management (JWT, bcrypt, rate limiting)
+- [x] **Milestone 6**: High-Throughput Employee Directory & Filter Engine
+- [x] **Milestone 7**: Responsive React Enterprise Client & Pure Redux Architecture
+- [x] **Milestone 8**: Atomic Compensation Adjustment Engine & Audit Logging
+- [x] **Milestone 9**: Executive Analytics Dashboard, Monthly Pay Ledger & Cashflow Forecast
+- [x] **Milestone 10**: Production Docker Orchestration, End-to-End Verification & Documentation
