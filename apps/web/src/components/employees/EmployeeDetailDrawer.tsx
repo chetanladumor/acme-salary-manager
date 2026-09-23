@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Drawer,
   Box,
@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Avatar,
   Paper,
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PaidIcon from '@mui/icons-material/Paid';
@@ -22,6 +23,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
 import { formatCurrency, formatDate, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
+import { SalaryAdjustmentModal } from './SalaryAdjustmentModal';
 
 interface EmployeeDetailDrawerProps {
   employeeId: string | null;
@@ -37,6 +39,8 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   const { data: employee, isLoading, error } = useGetEmployeeByIdQuery(employeeId || '', {
     skip: !employeeId || !open,
   });
+
+  const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
 
   return (
     <Drawer
@@ -180,6 +184,18 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                     sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600, bgcolor: '#F1F5F9' }}
                   />
                 </Stack>
+
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  fullWidth
+                  startIcon={<TrendingUpIcon />}
+                  onClick={() => setAdjustmentModalOpen(true)}
+                  sx={{ mt: 2, fontWeight: 600 }}
+                >
+                  Adjust Compensation
+                </Button>
               </CardContent>
             </Card>
 
@@ -316,6 +332,13 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
           </Stack>
         )}
       </Box>
+
+      {/* Salary Adjustment Dialog */}
+      <SalaryAdjustmentModal
+        open={adjustmentModalOpen}
+        onClose={() => setAdjustmentModalOpen(false)}
+        employee={employee || null}
+      />
     </Drawer>
   );
 };

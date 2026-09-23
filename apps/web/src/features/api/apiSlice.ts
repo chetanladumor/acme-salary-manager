@@ -92,6 +92,30 @@ export const apiSlice = createApi({
       transformResponse: (response: { success: boolean; data: FilterFacets }) => response.data,
       providesTags: ['Facets'],
     }),
+
+    adjustSalary: builder.mutation<
+      { salaryRecord: any; auditLogId: string },
+      {
+        employeeId: string;
+        data: {
+          annualSalary: number;
+          currency: string;
+          effectiveFrom: string;
+          reason: string;
+        };
+      }
+    >({
+      query: ({ employeeId, data }) => ({
+        url: `/employees/${employeeId}/salary`,
+        method: 'POST',
+        body: data,
+      }),
+      transformResponse: (response: { success: boolean; data: any }) => response.data,
+      invalidatesTags: (_result, _error, { employeeId }) => [
+        { type: 'Employee', id: employeeId },
+        { type: 'Employees', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
@@ -101,4 +125,5 @@ export const {
   useGetEmployeesQuery,
   useGetEmployeeByIdQuery,
   useGetFacetsQuery,
+  useAdjustSalaryMutation,
 } = apiSlice;
