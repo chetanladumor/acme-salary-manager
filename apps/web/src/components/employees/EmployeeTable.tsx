@@ -309,12 +309,17 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                   {/* Status */}
                   <TableCell>{getStatusChip(emp.status)}</TableCell>
 
-                  {/* Current Annual Salary */}
+                  {/* Current Compensation (Annual & Monthly) */}
                   <TableCell align="right">
                     {emp.currentSalary ? (
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                        {formatCurrency(emp.currentSalary.annualSalary, emp.currentSalary.currency)}
-                      </Typography>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                          {formatCurrency(emp.currentSalary.annualSalary, emp.currentSalary.currency)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600, display: 'block' }}>
+                          {formatCurrency(Math.round(emp.currentSalary.annualSalary / 12), emp.currentSalary.currency)}/mo
+                        </Typography>
+                      </Box>
                     ) : (
                       <Typography variant="body2" color="text.secondary">
                         —

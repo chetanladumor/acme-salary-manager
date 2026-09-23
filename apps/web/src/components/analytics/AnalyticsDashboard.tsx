@@ -24,6 +24,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PublicIcon from '@mui/icons-material/Public';
 import DomainIcon from '@mui/icons-material/Domain';
 import PieChartIcon from '@mui/icons-material/PieChart';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { useGetAnalyticsQuery } from '../../features/api/apiSlice';
 import { formatCurrency, getReasonLabel } from '../../utils/formatters';
 
@@ -145,6 +147,77 @@ export const AnalyticsDashboard: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Next Month Total Payroll Cashflow Forecast Card */}
+      <Card sx={{ bgcolor: '#0F172A', color: 'common.white', borderRadius: 2 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', md: 'center' }}
+            spacing={2}
+            sx={{ mb: 2.5 }}
+          >
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box sx={{ p: 1.25, borderRadius: 2, bgcolor: 'rgba(37, 99, 235, 0.2)', color: '#60A5FA', display: 'flex' }}>
+                <AccountBalanceWalletIcon fontSize="medium" />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#FFFFFF' }}>
+                  Next Month Total Payroll Cashflow Forecast
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                  Projected monthly gross salary obligations for the upcoming pay cycle based on active workforce compensation
+                </Typography>
+              </Box>
+            </Stack>
+            <Chip
+              icon={<PaymentsIcon style={{ fontSize: 16, color: '#34D399' }} />}
+              label="Upcoming Pay Cycle"
+              sx={{ bgcolor: 'rgba(16, 185, 129, 0.15)', color: '#34D399', fontWeight: 700 }}
+            />
+          </Stack>
+
+          <Grid container spacing={2}>
+            {kpis.nextMonthPayrollByCurrency?.map((item) => (
+              <Grid item xs={12} sm={6} md={3} lg={1.71} key={item.country}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: 2,
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                    <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
+                      {item.country}
+                    </Typography>
+                    <Chip
+                      label={item.currency}
+                      size="small"
+                      sx={{
+                        height: 18,
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        bgcolor: 'rgba(96, 165, 250, 0.2)',
+                        color: '#93C5FD',
+                      }}
+                    />
+                  </Stack>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#38BDF8', letterSpacing: '-0.02em' }}>
+                    {formatCurrency(item.monthlyPayroll, item.currency)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
+                    {item.headcount.toLocaleString()} active employees
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </CardContent>
+      </Card>
 
       {/* Row 2: Department Pay Distribution & Change Drivers */}
       <Grid container spacing={3}>
@@ -290,6 +363,7 @@ export const AnalyticsDashboard: React.FC = () => {
                   <TableCell align="right" sx={{ fontWeight: 700 }}>% of Workforce</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>Average Salary</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>Salary Range (Min – Max)</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: '#2563EB' }}>Next Month Payroll</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -336,6 +410,11 @@ export const AnalyticsDashboard: React.FC = () => {
                       <TableCell align="right">
                         <Typography variant="body2" color="text.secondary">
                           {formatCurrency(c.minSalary, c.currency)} – {formatCurrency(c.maxSalary, c.currency)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                          {formatCurrency(c.monthlyPayroll, c.currency)}
                         </Typography>
                       </TableCell>
                     </TableRow>

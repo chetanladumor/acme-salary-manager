@@ -16,6 +16,7 @@ export interface CountryMetric {
   avgSalary: number;
   minSalary: number;
   maxSalary: number;
+  monthlyPayroll: number;
 }
 
 export interface ReasonMetric {
@@ -33,6 +34,12 @@ export interface AnalyticsOverview {
     totalHistoricalRevisions: number;
     departmentsCount: number;
     countriesCount: number;
+    nextMonthPayrollByCurrency: Array<{
+      country: string;
+      currency: string;
+      headcount: number;
+      monthlyPayroll: number;
+    }>;
   };
   departments: DepartmentMetric[];
   countries: CountryMetric[];
@@ -150,6 +157,8 @@ export class AnalyticsService {
         const min = salaries.length > 0 ? Math.min(...salaries) : 0;
         const max = salaries.length > 0 ? Math.max(...salaries) : 0;
 
+        const monthlySum = Math.round(sum / 12);
+
         return {
           country: countryName,
           countryCode: item.code,
@@ -158,6 +167,7 @@ export class AnalyticsService {
           avgSalary: avg,
           minSalary: min,
           maxSalary: max,
+          monthlyPayroll: monthlySum,
         };
       })
       .sort((a, b) => b.headcount - a.headcount);
@@ -187,6 +197,12 @@ export class AnalyticsService {
         totalHistoricalRevisions,
         departmentsCount: departments.length,
         countriesCount: countries.length,
+        nextMonthPayrollByCurrency: countries.map((c) => ({
+          country: c.country,
+          currency: c.currency,
+          headcount: c.headcount,
+          monthlyPayroll: c.monthlyPayroll,
+        })),
       },
       departments,
       countries,

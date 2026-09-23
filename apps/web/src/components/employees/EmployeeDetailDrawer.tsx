@@ -21,6 +21,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 import PublicIcon from '@mui/icons-material/Public';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
 import { formatCurrency, formatDate, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
 import { SalaryAdjustmentModal } from './SalaryAdjustmentModal';
@@ -158,9 +160,19 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                       ? formatCurrency(employee.currentSalary.annualSalary, employee.currentSalary.currency)
                       : 'Not Set'}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Per Annum (Gross Base Salary)
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Per Annum
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>
+                      •
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                      {employee.currentSalary
+                        ? `${formatCurrency(employee.currentSalary.monthlySalary || Math.round(employee.currentSalary.annualSalary / 12), employee.currentSalary.currency)} / month`
+                        : '—'}
+                    </Typography>
+                  </Stack>
                 </Box>
 
                 <Divider sx={{ my: 1.5 }} />
@@ -327,6 +339,81 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                     );
                   })}
                 </Stack>
+              </CardContent>
+            </Card>
+
+            {/* Card 4: Monthly Salary Disbursement Ledger (Previous Months Paid) */}
+            <Card>
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <ReceiptLongIcon color="primary" fontSize="small" />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    Monthly Pay Ledger (Previous Disbursements)
+                  </Typography>
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  Historical record of monthly salary payouts disbursed to this employee.
+                </Typography>
+
+                {employee.monthlyPayouts && employee.monthlyPayouts.length > 0 ? (
+                  <Stack spacing={1.5}>
+                    {employee.monthlyPayouts.map((payout) => (
+                      <Paper
+                        key={payout.id}
+                        elevation={0}
+                        sx={{
+                          p: 1.5,
+                          bgcolor: '#FFFFFF',
+                          border: '1px solid #E2E8F0',
+                          borderRadius: 2,
+                          '&:hover': { bgcolor: '#F8FAFC' },
+                        }}
+                      >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                              {payout.month}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Disbursed: {formatDate(payout.payoutDate)}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'right' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#16A34A' }}>
+                              {formatCurrency(payout.amount, payout.currency)}
+                            </Typography>
+                            <Chip
+                              icon={<CheckCircleOutlineIcon style={{ fontSize: 13 }} />}
+                              label={payout.status}
+                              size="small"
+                              sx={{
+                                height: 18,
+                                fontSize: '0.65rem',
+                                fontWeight: 700,
+                                bgcolor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
+                                color: payout.status === 'PAID' ? '#15803D' : '#2563EB',
+                                mt: 0.25,
+                              }}
+                            />
+                          </Box>
+                        </Stack>
+                        <Divider sx={{ my: 1, borderColor: '#F1F5F9' }} />
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" color="text.secondary">
+                            Compensation Basis:
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748B' }}>
+                            {getReasonLabel(payout.reason as any)}
+                          </Typography>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    No historical monthly disbursements on record.
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Stack>

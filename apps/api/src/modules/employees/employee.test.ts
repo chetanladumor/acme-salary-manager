@@ -121,6 +121,14 @@ describe('Employee Module API', () => {
       expect(response.body.data.tenure.years).toBeTypeOf('number');
       expect(response.body.data.salaryHistory).toBeInstanceOf(Array);
       expect(response.body.data.salaryHistory.length).toBeGreaterThanOrEqual(1);
+      expect(response.body.data.currentSalary.monthlySalary).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts).toBeInstanceOf(Array);
+      expect(response.body.data.monthlyPayouts.length).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts[0].amount).toBeGreaterThan(0);
+      expect(['PAID', 'SCHEDULED']).toContain(response.body.data.monthlyPayouts[0].status);
+      if (response.body.data.monthlyPayouts.length > 1) {
+        expect(response.body.data.monthlyPayouts[1].status).toBe('PAID');
+      }
     });
 
     it('should return 404 for non-existent employee', async () => {

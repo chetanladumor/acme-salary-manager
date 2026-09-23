@@ -18,6 +18,7 @@ export interface User {
 export interface CurrentSalary {
   id: string;
   annualSalary: number;
+  monthlySalary?: number;
   currency: string;
   effectiveFrom: string;
   reason: ChangeReason;
@@ -50,6 +51,17 @@ export interface SalaryHistoryItem {
   createdAt: string;
 }
 
+export interface MonthlyPayoutItem {
+  id: string;
+  month: string;
+  year: number;
+  amount: number;
+  currency: string;
+  status: 'PAID' | 'SCHEDULED';
+  payoutDate: string;
+  reason: string;
+}
+
 export interface EmployeeDetail extends EmployeeListItem {
   tenure: {
     years: number;
@@ -57,6 +69,7 @@ export interface EmployeeDetail extends EmployeeListItem {
     totalMonths: number;
   };
   salaryHistory: SalaryHistoryItem[];
+  monthlyPayouts?: MonthlyPayoutItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -109,6 +122,7 @@ export interface CountryMetric {
   avgSalary: number;
   minSalary: number;
   maxSalary: number;
+  monthlyPayroll: number;
 }
 
 export interface ReasonMetric {
@@ -126,6 +140,12 @@ export interface AnalyticsOverview {
     totalHistoricalRevisions: number;
     departmentsCount: number;
     countriesCount: number;
+    nextMonthPayrollByCurrency: Array<{
+      country: string;
+      currency: string;
+      headcount: number;
+      monthlyPayroll: number;
+    }>;
   };
   departments: DepartmentMetric[];
   countries: CountryMetric[];

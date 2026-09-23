@@ -52,6 +52,12 @@ describe('Analytics Module API', () => {
       expect(data.countries).toBeInstanceOf(Array);
       expect(data.countries.length).toBe(7);
       expect(data.countries[0].currency).toBeDefined();
+      expect(data.countries[0].monthlyPayroll).toBeGreaterThan(0);
+
+      // Next month payroll forecast
+      expect(data.kpis.nextMonthPayrollByCurrency).toBeInstanceOf(Array);
+      expect(data.kpis.nextMonthPayrollByCurrency.length).toBe(7);
+      expect(data.kpis.nextMonthPayrollByCurrency[0].monthlyPayroll).toBeGreaterThan(0);
 
       // Change reasons
       expect(data.reasons).toBeInstanceOf(Array);

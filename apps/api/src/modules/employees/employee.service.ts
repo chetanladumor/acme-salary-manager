@@ -206,6 +206,50 @@ export class EmployeeService {
     const tenureYears = Math.floor(totalMonths / 12);
     const tenureMonths = totalMonths % 12;
 
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+
+    const monthlyPayouts: Array<{
+      month: string;
+      year: number;
+      amount: number;
+      currency: string;
+      status: 'PAID' | 'SCHEDULED';
+      payoutDate: string;
+      reason: string;
+    }> = [];
+
+    // Calculate payouts for past months up to 12 months
+    for (let i = 0; i < 12; i++) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      if (monthDate < new Date(hireDate.getFullYear(), hireDate.getMonth(), 1)) {
+        break; // before hire date
+      }
+
+      const payoutDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 28);
+
+      const record =
+        employee.salaryRecords.find((rec) => {
+          const from = new Date(rec.effectiveFrom);
+          const to = rec.effectiveTo ? new Date(rec.effectiveTo) : null;
+          return from <= payoutDate && (!to || to >= payoutDate);
+        }) || employee.salaryRecords[0];
+
+      if (record) {
+        monthlyPayouts.push({
+          month: `${monthNames[monthDate.getMonth()]} ${monthDate.getFullYear()}`,
+          year: monthDate.getFullYear(),
+          amount: Math.round(Number(record.annualSalary) / 12),
+          currency: record.currency,
+          status: payoutDate <= now ? 'PAID' : 'SCHEDULED',
+          payoutDate: payoutDate.toISOString().split('T')[0],
+          reason: record.reason,
+        });
+      }
+    }
+
     return {
       id: employee.id,
       employeeCode: employee.employeeCode,
@@ -228,12 +272,14 @@ export class EmployeeService {
         ? {
             id: activeSalary.id,
             annualSalary: Number(activeSalary.annualSalary),
+            monthlySalary: Math.round(Number(activeSalary.annualSalary) / 12),
             currency: activeSalary.currency,
             effectiveFrom: activeSalary.effectiveFrom,
             reason: activeSalary.reason,
           }
         : null,
       salaryHistory: history,
+      monthlyPayouts,
       createdAt: employee.createdAt,
       updatedAt: employee.updatedAt,
     };
