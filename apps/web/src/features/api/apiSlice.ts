@@ -7,6 +7,7 @@ import {
   PaginationMeta,
   FilterFacets,
   EmployeeFilterParams,
+  AnalyticsOverview,
 } from '../../types';
 
 export const apiSlice = createApi({
@@ -116,6 +117,12 @@ export const apiSlice = createApi({
         { type: 'Employees', id: 'LIST' },
       ],
     }),
+
+    getAnalytics: builder.query<AnalyticsOverview, void>({
+      query: () => '/analytics/overview',
+      transformResponse: (response: { success: boolean; data: AnalyticsOverview }) => response.data,
+      providesTags: [{ type: 'Employees', id: 'LIST' }],
+    }),
   }),
 });
 
@@ -126,4 +133,5 @@ export const {
   useGetEmployeeByIdQuery,
   useGetFacetsQuery,
   useAdjustSalaryMutation,
+  useGetAnalyticsQuery,
 } = apiSlice;

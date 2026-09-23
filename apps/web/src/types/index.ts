@@ -92,3 +92,43 @@ export interface EmployeeFilterParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export interface DepartmentMetric {
+  department: string;
+  headcount: number;
+  avgSalary: number;
+  minSalary: number;
+  maxSalary: number;
+}
+
+export interface CountryMetric {
+  country: string;
+  countryCode: string;
+  currency: string;
+  headcount: number;
+  avgSalary: number;
+  minSalary: number;
+  maxSalary: number;
+}
+
+export interface ReasonMetric {
+  reason: string;
+  count: number;
+  percentage: string;
+}
+
+export interface AnalyticsOverview {
+  kpis: {
+    totalHeadcount: number;
+    activeHeadcount: number;
+    onLeaveHeadcount: number;
+    inactiveHeadcount: number;
+    totalHistoricalRevisions: number;
+    departmentsCount: number;
+    countriesCount: number;
+  };
+  departments: DepartmentMetric[];
+  countries: CountryMetric[];
+  reasons: ReasonMetric[];
+  calculatedAt: string;
+}
