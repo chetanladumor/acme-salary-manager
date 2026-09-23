@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env';
 import { authRouter } from './modules/auth/auth.routes';
+import { employeeRouter } from './modules/employees/employee.routes';
 
 export const app = express();
 
@@ -33,6 +34,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // Mount module routes
 app.use('/api/auth', authRouter);
+app.use('/api/employees', employeeRouter);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
