@@ -209,7 +209,32 @@ export const AnalyticsDashboard: React.FC = () => {
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#38BDF8', letterSpacing: '-0.02em' }}>
                     {formatCurrency(item.monthlyPayroll, item.currency)}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', fontSize: '0.68rem', mt: 0.25 }}>
+                    Gross Total Obligation
+                  </Typography>
+
+                  <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <Stack spacing={0.25}>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>
+                          Net Direct Pay:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#34D399', fontWeight: 700, fontSize: '0.68rem' }}>
+                          {formatCurrency(item.netMonthlyPayroll || Math.round(item.monthlyPayroll * 0.75), item.currency)}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>
+                          Tax & Benefits:
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#F87171', fontWeight: 600, fontSize: '0.68rem' }}>
+                          {formatCurrency(item.deductionsMonthlyPayroll || Math.round(item.monthlyPayroll * 0.25), item.currency)}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </Box>
+
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 1 }}>
                     {item.headcount.toLocaleString()} active employees
                   </Typography>
                 </Paper>
@@ -363,7 +388,7 @@ export const AnalyticsDashboard: React.FC = () => {
                   <TableCell align="right" sx={{ fontWeight: 700 }}>% of Workforce</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>Average Salary</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>Salary Range (Min – Max)</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, color: '#2563EB' }}>Next Month Payroll</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: '#2563EB' }}>Next Month Payroll (Gross / Net)</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -413,8 +438,11 @@ export const AnalyticsDashboard: React.FC = () => {
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
                           {formatCurrency(c.monthlyPayroll, c.currency)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#16A34A', fontWeight: 700, display: 'block' }}>
+                          Net: {formatCurrency(c.netMonthlyPayroll || Math.round(c.monthlyPayroll * 0.75), c.currency)}
                         </Typography>
                       </TableCell>
                     </TableRow>

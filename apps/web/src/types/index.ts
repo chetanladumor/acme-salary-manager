@@ -130,6 +130,9 @@ export interface CountryMetric {
   minSalary: number;
   maxSalary: number;
   monthlyPayroll: number;
+  grossMonthlyPayroll?: number;
+  netMonthlyPayroll?: number;
+  deductionsMonthlyPayroll?: number;
 }
 
 export interface ReasonMetric {
@@ -152,6 +155,9 @@ export interface AnalyticsOverview {
       currency: string;
       headcount: number;
       monthlyPayroll: number;
+      grossMonthlyPayroll?: number;
+      netMonthlyPayroll?: number;
+      deductionsMonthlyPayroll?: number;
     }>;
   };
   departments: DepartmentMetric[];

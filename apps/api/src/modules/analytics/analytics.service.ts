@@ -16,7 +16,10 @@ export interface CountryMetric {
   avgSalary: number;
   minSalary: number;
   maxSalary: number;
-  monthlyPayroll: number;
+  monthlyPayroll: number; // Gross monthly payroll
+  grossMonthlyPayroll: number;
+  netMonthlyPayroll: number;
+  deductionsMonthlyPayroll: number;
 }
 
 export interface ReasonMetric {
@@ -39,6 +42,9 @@ export interface AnalyticsOverview {
       currency: string;
       headcount: number;
       monthlyPayroll: number;
+      grossMonthlyPayroll: number;
+      netMonthlyPayroll: number;
+      deductionsMonthlyPayroll: number;
     }>;
   };
   departments: DepartmentMetric[];
@@ -158,6 +164,18 @@ export class AnalyticsService {
         const max = salaries.length > 0 ? Math.max(...salaries) : 0;
 
         const monthlySum = Math.round(sum / 12);
+        const DEDUCTION_RATES: Record<string, number> = {
+          US: 0.25,
+          GB: 0.25,
+          DE: 0.30,
+          NO: 0.31,
+          SE: 0.33,
+          CA: 0.27,
+          IN: 0.23,
+        };
+        const deductionRate = DEDUCTION_RATES[item.code] || 0.25;
+        const netMonthly = Math.round(monthlySum * (1 - deductionRate));
+        const deductionsMonthly = monthlySum - netMonthly;
 
         return {
           country: countryName,
@@ -168,6 +186,9 @@ export class AnalyticsService {
           minSalary: min,
           maxSalary: max,
           monthlyPayroll: monthlySum,
+          grossMonthlyPayroll: monthlySum,
+          netMonthlyPayroll: netMonthly,
+          deductionsMonthlyPayroll: deductionsMonthly,
         };
       })
       .sort((a, b) => b.headcount - a.headcount);
@@ -202,6 +223,9 @@ export class AnalyticsService {
           currency: c.currency,
           headcount: c.headcount,
           monthlyPayroll: c.monthlyPayroll,
+          grossMonthlyPayroll: c.grossMonthlyPayroll,
+          netMonthlyPayroll: c.netMonthlyPayroll,
+          deductionsMonthlyPayroll: c.deductionsMonthlyPayroll,
         })),
       },
       departments,

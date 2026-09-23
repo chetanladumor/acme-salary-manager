@@ -13,6 +13,7 @@ import {
   Avatar,
   Paper,
   Button,
+  Collapse,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PaidIcon from '@mui/icons-material/Paid';
@@ -23,6 +24,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
 import { formatCurrency, formatDate, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
 import { SalaryAdjustmentModal } from './SalaryAdjustmentModal';
@@ -43,6 +46,14 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   });
 
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
+  const [expandedPayouts, setExpandedPayouts] = useState<Record<string, boolean>>({});
+
+  const togglePayoutExpand = (id: string) => {
+    setExpandedPayouts((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   return (
     <Drawer
@@ -357,119 +368,166 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
 
                 {employee.monthlyPayouts && employee.monthlyPayouts.length > 0 ? (
                   <Stack spacing={1.5}>
-                    {employee.monthlyPayouts.map((payout) => (
-                      <Paper
-                        key={payout.id}
-                        elevation={0}
-                        sx={{
-                          p: 1.75,
-                          bgcolor: '#FFFFFF',
-                          border: '1px solid #E2E8F0',
-                          borderRadius: 2,
-                          '&:hover': { borderColor: '#93C5FD', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' },
-                        }}
-                      >
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                              {payout.month}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Disbursed: {formatDate(payout.payoutDate)}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#16A34A' }}>
-                              {payout.netSalary !== undefined
-                                ? formatCurrency(payout.netSalary, payout.currency)
-                                : formatCurrency(payout.amount, payout.currency)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem' }}>
-                              Net Take-Home
-                            </Typography>
-                          </Box>
-                        </Stack>
+                    {employee.monthlyPayouts.map((payout) => {
+                      const isExpanded = !!expandedPayouts[payout.id];
+                      const gross = payout.grossSalary || payout.amount;
+                      const tax = payout.taxDeduction || 0;
+                      const leave = payout.leaveDeduction || 0;
+                      const other = payout.otherDeductions || 0;
+                      const net = payout.netSalary !== undefined ? payout.netSalary : payout.amount;
+                      const taxRatePct = gross > 0 ? ((tax / gross) * 100).toFixed(1).replace('.0', '') : '20';
+                      const otherRatePct = gross > 0 ? ((other / gross) * 100).toFixed(1).replace('.0', '') : '5';
 
-                        {/* Deductions & Payslip Breakdown */}
-                        <Box sx={{ mt: 1.5, p: 1.25, bgcolor: '#F8FAFC', borderRadius: 1.5, border: '1px solid #F1F5F9' }}>
-                          <Stack spacing={0.5}>
-                            <Stack direction="row" justifyContent="space-between">
+                      return (
+                        <Paper
+                          key={payout.id}
+                          elevation={0}
+                          sx={{
+                            p: 2,
+                            bgcolor: '#FFFFFF',
+                            border: isExpanded ? '1.5px solid #2563EB' : '1px solid #E2E8F0',
+                            borderRadius: 2,
+                            transition: 'all 0.2s ease',
+                            '&:hover': { borderColor: '#93C5FA', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' },
+                          }}
+                        >
+                          {/* Header: Gross vs. Net Pay Overview */}
+                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                            <Box>
+                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A' }}>
+                                {payout.month}
+                              </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                Gross Base:
+                                Pay Date: {formatDate(payout.payoutDate)}
                               </Typography>
-                              <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                                {formatCurrency(payout.grossSalary || payout.amount, payout.currency)}
+                              <Typography variant="caption" sx={{ display: 'block', color: '#64748B', mt: 0.25 }}>
+                                Basis: {getReasonLabel(payout.reason as any)}
                               </Typography>
-                            </Stack>
+                            </Box>
 
-                            <Stack direction="row" justifyContent="space-between">
-                              <Typography variant="caption" sx={{ color: '#EF4444' }}>
-                                • Income Tax Withheld:
-                              </Typography>
-                              <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
-                                -{formatCurrency(payout.taxDeduction || 0, payout.currency)}
-                              </Typography>
-                            </Stack>
-
-                            {(payout.leaveDeduction || 0) > 0 && (
-                              <Stack direction="row" justifyContent="space-between">
-                                <Typography variant="caption" sx={{ color: '#EF4444' }}>
-                                  • Unpaid Leave Deduction:
-                                </Typography>
-                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
-                                  -{formatCurrency(payout.leaveDeduction || 0, payout.currency)}
-                                </Typography>
-                              </Stack>
-                            )}
-
-                            <Stack direction="row" justifyContent="space-between">
-                              <Typography variant="caption" sx={{ color: '#EF4444' }}>
-                                • Benefits & Retirement (5%):
-                              </Typography>
-                              <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
-                                -{formatCurrency(payout.otherDeductions || 0, payout.currency)}
-                              </Typography>
-                            </Stack>
-
-                            <Divider sx={{ my: 0.5 }} />
-
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                                Net Disbursed:
-                              </Typography>
+                            <Stack alignItems="flex-end" spacing={0.5}>
                               <Stack direction="row" spacing={1} alignItems="center">
+                                <Box sx={{ textAlign: 'right' }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.68rem' }}>
+                                    Gross: {formatCurrency(gross, payout.currency)}
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 800, color: '#16A34A' }}>
+                                    Net: {formatCurrency(net, payout.currency)}
+                                  </Typography>
+                                </Box>
                                 <Chip
                                   icon={<CheckCircleOutlineIcon style={{ fontSize: 13 }} />}
                                   label={payout.status}
                                   size="small"
                                   sx={{
-                                    height: 18,
+                                    height: 20,
                                     fontSize: '0.65rem',
                                     fontWeight: 700,
                                     bgcolor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
                                     color: payout.status === 'PAID' ? '#15803D' : '#2563EB',
                                   }}
                                 />
-                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#16A34A' }}>
-                                  {formatCurrency(payout.netSalary !== undefined ? payout.netSalary : payout.amount, payout.currency)}
-                                </Typography>
                               </Stack>
+
+                              <Button
+                                size="small"
+                                onClick={() => togglePayoutExpand(payout.id)}
+                                endIcon={isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                sx={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 600,
+                                  textTransform: 'none',
+                                  p: 0,
+                                  minWidth: 'auto',
+                                  color: '#2563EB',
+                                }}
+                              >
+                                {isExpanded ? 'Hide Payslip' : 'View Payslip'}
+                              </Button>
                             </Stack>
                           </Stack>
-                        </Box>
 
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Basis: {getReasonLabel(payout.reason as any)}
-                          </Typography>
-                          {payout.notes && (
-                            <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic', maxWidth: '65%', textAlign: 'right' }}>
-                              {payout.notes}
-                            </Typography>
-                          )}
-                        </Stack>
-                      </Paper>
-                    ))}
+                          {/* Expandable Payslip Breakdown */}
+                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                            <Box
+                              sx={{
+                                mt: 2,
+                                p: 2,
+                                bgcolor: '#F8FAFC',
+                                borderRadius: 2,
+                                border: '1px solid #E2E8F0',
+                              }}
+                            >
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', mb: 1.5, letterSpacing: '0.05em' }}>
+                                Itemized Payslip & Deduction Voucher
+                              </Typography>
+
+                              <Stack spacing={1}>
+                                {/* Gross Salary */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
+                                    🟢 Gross Salary:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                                    {formatCurrency(gross, payout.currency)}
+                                  </Typography>
+                                </Stack>
+
+                                {/* Income Tax Withholding */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
+                                    🔴 Income Tax Withholding:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                    - {formatCurrency(tax, payout.currency)} ({taxRatePct}%)
+                                  </Typography>
+                                </Stack>
+
+                                {/* Unpaid Leave */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
+                                    🔴 Unpaid Leave:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: leave > 0 ? '#DC2626' : '#64748B' }}>
+                                    - {formatCurrency(leave, payout.currency)}
+                                  </Typography>
+                                </Stack>
+
+                                {/* Benefits & Retirement */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
+                                    🔴 Benefits & Retirement:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                    - {formatCurrency(other, payout.currency)} ({otherRatePct}%)
+                                  </Typography>
+                                </Stack>
+
+                                <Divider sx={{ my: 1, borderColor: '#CBD5E1' }} />
+
+                                {/* Net Disbursed Take-Home */}
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                  <Typography variant="body1" sx={{ fontWeight: 800, color: '#1D4ED8' }}>
+                                    🔵 Net Disbursed Take-Home:
+                                  </Typography>
+                                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#1D4ED8' }}>
+                                    {formatCurrency(net, payout.currency)}
+                                  </Typography>
+                                </Stack>
+                              </Stack>
+
+                              {payout.notes && (
+                                <Box sx={{ mt: 1.5, pt: 1, borderTop: '1px dashed #E2E8F0' }}>
+                                  <Typography variant="caption" sx={{ color: '#64748B', fontStyle: 'italic', display: 'block' }}>
+                                    Remittance Reference: {payout.notes}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Collapse>
+                        </Paper>
+                      );
+                    })}
                   </Stack>
                 ) : (
                   <Typography variant="caption" color="text.secondary">
