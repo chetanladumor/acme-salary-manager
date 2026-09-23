@@ -9,6 +9,15 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.18-2D3748.svg)](https://www.prisma.io/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/Tests-51%20Passing-brightgreen.svg)](https://github.com/chetanladumor/acme-salary-manager)
+
+---
+
+### 🔗 Quick Links & Live Deployments
+* **🌐 Live Production Web App**: [https://acme-salary-manager-web.vercel.app](https://acme-salary-manager-web.vercel.app/)
+* **📡 Live Cloud API**: [https://acme-salary-manager.onrender.com/api/health](https://acme-salary-manager.onrender.com/api/health)
+* **🎥 Video Walkthrough Demo**: [Watch 5-Minute Demo Video](https://www.awesomescreenshot.com/video/56791488?key=3cc208f91f337112ee25a7237ed7efcf)
+* **Default HR Admin Credentials**: `hr@acme.com` / `Admin#Pass2026!`
 
 ---
 
@@ -97,7 +106,7 @@ npm run db:generate --workspace=@acme/api
 # Seed deterministic dataset (10,000 employees in ~2.2s)
 npm run db:seed --workspace=@acme/api
 
-# Run automated tests (33 passing unit/integration tests)
+# Run automated tests (51 passing unit/integration tests)
 npm run test --workspaces
 
 # Start backend & frontend in development mode
@@ -108,7 +117,8 @@ npm run dev --workspaces
 
 ## 🎬 Video Demo
 
-> 📺 **Demo Video**: *(Add Loom/video link here after recording)*
+> 📺 **Demo Video Walkthrough**: [Watch the 5-Minute Video Walkthrough](https://www.awesomescreenshot.com/video/56791488?key=3cc208f91f337112ee25a7237ed7efcf)  
+> Covers employee filtering, salary progression, atomic compensation adjustments with audit logging, Loss of Pay leave deductions, and the executive multi-currency cashflow forecast.
 
 ---
 
@@ -138,14 +148,15 @@ Run unit, integration, and Redux purity tests across all workspaces:
 npm run test --workspaces
 ```
 
-* **`@acme/api` (22 tests)**:
-  * Authentication, session validation, and unauthorized rejection tests
-  * Employee search, multifaceted filtering, and pagination limits
-  * Salary adjustment atomicity, audit logging, and temporal closure
-  * Executive analytics KPIs and next-month payroll calculations
+* **`@acme/api` (40 tests)**:
+  * **Authentication & RBAC (7 tests)**: Invalid body, wrong password rejection, valid JWT generation, unauthorized endpoints, `/me` profile verification.
+  * **Employees & Directory (11 tests)**: Multi-parameter filtering (country, dept, status, currency, minSalary), search debounce, pagination overflow (`page > totalPages`), facets validation.
+  * **Salary Revision Engine (9 tests)**: Zero/negative salary rejection, backdating date rejection (`INVALID_EFFECTIVE_DATE`), inactive employee rejection (`EMPLOYEE_INACTIVE`), non-existent employee (`404`), atomic raise transaction with audit trail, chronological history sorting.
+  * **Leaves & LOP Engine (8 tests)**: Annual quotas entitlement, used vs remaining balance synchronization, leave application audit, payslip LOP deduction math (`net = gross - deductions`), daily rate formula verification.
+  * **Analytics & Cashflow Math (5 tests)**: Executive workforce KPIs, regional aggregations, department headcount integrity, cashflow invariant math validation (`gross - LOP = net + tax`).
 * **`@acme/web` (11 tests)**:
-  * Pure Redux `authSlice` state transitions
-  * Currency formatters, date formatters, and percentage calculators
+  * **Pure Redux Architecture (3 tests)**: `authSlice` pure state transitions, login success, logout cleanup.
+  * **Utilities & Formatting (8 tests)**: Multi-currency formatting, ISO date formatters, percentage change calculations.
 
 ---
 
@@ -176,3 +187,4 @@ npm run test --workspaces
 - [x] **Milestone 11**: Physical Payroll Disbursement Ledger (118,710 records) with Tax, LOP & Benefits
 - [x] **Milestone 12**: Leave Management Engine — Quotas, History, Automated Loss of Pay Deductions
 - [x] **Milestone 13**: Cashflow Accounting Fix — True Cash Outflow vs. Company-Retained LOP Savings
+- [x] **Milestone 14**: Comprehensive 51-Test Automated Suite & Production Cloud Deployment
