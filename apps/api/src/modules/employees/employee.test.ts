@@ -89,7 +89,31 @@ describe('Employee Module API', () => {
         expect(emp.currentSalary.annualSalary).toBeGreaterThanOrEqual(150000);
       });
     });
+
+    it('should return empty data array when page exceeds total pages', async () => {
+      const response = await request(app)
+        .get('/api/employees?page=9999&limit=25')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.length).toBe(0);
+      expect(response.body.pagination.total).toBe(10000);
+    });
+
+    it('should filter by employment status ACTIVE only', async () => {
+      const response = await request(app)
+        .get('/api/employees?status=ACTIVE&limit=10')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      response.body.data.forEach((emp: any) => {
+        expect(emp.status).toBe('ACTIVE');
+      });
+    });
   });
+
 
   describe('GET /api/employees/facets', () => {
     it('should return distinct metadata facets for filters', async () => {

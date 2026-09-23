@@ -65,5 +65,70 @@ describe('Analytics Module API', () => {
       expect(data.reasons).toBeInstanceOf(Array);
       expect(data.reasons.length).toBeGreaterThanOrEqual(3);
     });
+
+    it('cashflow accounting: payableGross = gross - LOP, and net + tax ≈ payableGross', async () => {
+      const response = await request(app)
+        .get('/api/analytics/overview')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      const forecasts = response.body.data.kpis.nextMonthPayrollByCurrency;
+
+      for (const entry of forecasts) {
+        const { monthlyPayroll, grossMonthlyPayroll, netMonthlyPayroll, deductionsMonthlyPayroll, leaveDeductionsMonthlyPayroll } = entry;
+
+        // 1. payableGross (monthlyPayroll) must be less than or equal to contractual grossMonthlyPayroll
+        expect(monthlyPayroll).toBeLessThanOrEqual(grossMonthlyPayroll);
+
+        // 2. All monetary fields must be non-negative
+        expect(monthlyPayroll).toBeGreaterThan(0);
+        expect(netMonthlyPayroll).toBeGreaterThan(0);
+        expect(deductionsMonthlyPayroll).toBeGreaterThan(0);
+        expect(leaveDeductionsMonthlyPayroll ?? 0).toBeGreaterThanOrEqual(0);
+
+        // 3. LOP retained = gross - payableGross (money company never pays)
+        if (leaveDeductionsMonthlyPayroll != null && leaveDeductionsMonthlyPayroll > 0) {
+          const expectedPayableGross = grossMonthlyPayroll - leaveDeductionsMonthlyPayroll;
+          // Allow ±1 rounding tolerance due to integer rounding in service
+          expect(Math.abs(monthlyPayroll - expectedPayableGross)).toBeLessThanOrEqual(1);
+        }
+
+        // 4. Net + Tax/Benefits ≈ payableGross (cash outflow identity)
+        const cashOutflow = netMonthlyPayroll + deductionsMonthlyPayroll;
+        // Allow ±1 rounding tolerance
+        expect(Math.abs(cashOutflow - monthlyPayroll)).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it('all 7 currencies are present in the payroll forecast', async () => {
+      const response = await request(app)
+        .get('/api/analytics/overview')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      const forecasts = response.body.data.kpis.nextMonthPayrollByCurrency;
+      const currencies = forecasts.map((f: any) => f.currency);
+
+      expect(currencies).toContain('USD');
+      expect(currencies).toContain('EUR');
+      expect(currencies).toContain('GBP');
+      expect(currencies).toContain('CAD');
+      expect(currencies).toContain('INR');
+      expect(currencies).toContain('SEK');
+      expect(currencies).toContain('NOK');
+    });
+
+    it('department headcounts sum to total active + on-leave employees', async () => {
+      const response = await request(app)
+        .get('/api/analytics/overview')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      const { departments, kpis } = response.body.data;
+
+      const deptTotal = departments.reduce((sum: number, d: any) => sum + d.headcount, 0);
+      // Department counts include all employees (ACTIVE + ON_LEAVE + INACTIVE)
+      expect(deptTotal).toBe(kpis.totalHeadcount);
+    });
   });
 });
