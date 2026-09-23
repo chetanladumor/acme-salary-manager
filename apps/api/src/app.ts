@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env';
+import { authRouter } from './modules/auth/auth.routes';
 
 export const app = express();
 
@@ -30,6 +31,9 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
+// Mount module routes
+app.use('/api/auth', authRouter);
+
 // 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({
@@ -42,13 +46,20 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Centralized error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('[API Error]:', err);
-  res.status(500).json({
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const statusCode = err.statusCode || 500;
+  const errorCode = err.code || 'INTERNAL_SERVER_ERROR';
+
+  if (statusCode >= 500) {
+    console.error('[API Error]:', err);
+  }
+
+  res.status(statusCode).json({
     success: false,
     error: {
-      code: 'INTERNAL_SERVER_ERROR',
-      message: env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message,
+      code: errorCode,
+      message: statusCode >= 500 && env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message,
+      ...(err.details && { details: err.details }),
     },
   });
 });
