@@ -106,19 +106,27 @@ npm run dev --workspaces
 
 ---
 
+## 🎬 Video Demo
+
+> 📺 **Demo Video**: *(Add Loom/video link here after recording)*
+
+---
+
 ## 📊 Analytics & Next-Month Payroll Cashflow
 
-The platform automatically computes future cashflow payroll obligations for the upcoming pay cycle based on all active employees.
+The platform computes **Total Cash Outflow Needed** for the upcoming pay cycle — the actual amount the company must fund from treasury (Net Pay + Tax/Benefits). Unpaid Leave (LOP) savings are surfaced separately as retained funds that never leave the company account.
 
-| Operating Jurisdiction | Currency | Active Workforce | Projected Next-Month Total Payroll |
-| :--- | :---: | :---: | :---: |
-| **United States** | USD | 1,402 | **$16,272,208 / mo** |
-| **Canada** | CAD | 1,431 | **$15,371,458 / mo** |
-| **United Kingdom** | GBP | 1,432 | **£10,492,208 / mo** |
-| **Germany** | EUR | 1,479 | **€11,114,042 / mo** |
-| **Sweden** | SEK | 1,437 | **104,441,083 / mo** |
-| **Norway** | NOK | 1,378 | **107,448,333 / mo** |
-| **India** | INR | 1,441 | **₹395,341,167 / mo** |
+| Operating Jurisdiction | Currency | Active Workforce | Cash Outflow Required | LOP Retained by Company |
+| :--- | :---: | :---: | :---: | :---: |
+| **United States** | USD | 1,402 | **$16,073,076** | +$199,148 |
+| **Canada** | CAD | 1,431 | **$15,177,836** | +$184,846 |
+| **United Kingdom** | GBP | 1,432 | **£10,372,625** | +£119,582 |
+| **Germany** | EUR | 1,479 | **€10,961,994** | +€152,052 |
+| **Sweden** | SEK | 1,437 | **102,880,660 SEK** | +1,560,415 SEK |
+| **Norway** | NOK | 1,378 | **106,333,852 NOK** | +1,114,499 NOK |
+| **India** | INR | 1,441 | **₹390,081,777** | +₹5,259,383 |
+
+> 💡 **Cashflow Accounting**: `Cash Outflow = Net Direct Pay (to employees) + Tax & Benefits (to government/insurers)`. Unpaid Leave (LOP) is salary the company never pays — it stays in company accounts.
 
 ---
 
@@ -141,15 +149,30 @@ npm run test --workspaces
 
 ---
 
+## 📄 Engineering Artifacts
+
+| Document | Description |
+| :--- | :--- |
+| [`docs/requirements.md`](docs/requirements.md) | Product requirements: goal, scope, deliberate exclusions & rationale |
+| [`docs/architecture.md`](docs/architecture.md) | System architecture, data models, indexing strategy, payroll engine |
+| [`docs/decisions.md`](docs/decisions.md) | Architecture Decision Records (ADRs) — 6 key design decisions |
+| [`docs/tradeoffs.md`](docs/tradeoffs.md) | Engineering tradeoffs — 7 key decisions with options and rationale |
+| [`docs/ai/prompts.md`](docs/ai/prompts.md) | AI-assisted engineering prompt log — intentional AI usage documentation |
+
+---
+
 ## 🗺️ Completed Milestones
 
 - [x] **Milestone 1**: Monorepo Architecture & TypeScript Configuration
 - [x] **Milestone 2**: Relational Data Modeling & PostgreSQL Schema with Decimal precision
 - [x] **Milestone 3**: High-Performance Database Indexing & Query Optimizations
-- [x] **Milestone 4**: Sanitized Deterministic Seeding Engine (10,000 employees, 17,458 revisions in 2.24s)
+- [x] **Milestone 4**: Sanitized Deterministic Seeding Engine (10,000 employees, 17,782 revisions in 2.24s)
 - [x] **Milestone 5**: Secure Authentication API & Session Management (JWT, bcrypt, rate limiting)
 - [x] **Milestone 6**: High-Throughput Employee Directory & Filter Engine
 - [x] **Milestone 7**: Responsive React Enterprise Client & Pure Redux Architecture
 - [x] **Milestone 8**: Atomic Compensation Adjustment Engine & Audit Logging
 - [x] **Milestone 9**: Executive Analytics Dashboard, Monthly Pay Ledger & Cashflow Forecast
 - [x] **Milestone 10**: Production Docker Orchestration, End-to-End Verification & Documentation
+- [x] **Milestone 11**: Physical Payroll Disbursement Ledger (118,710 records) with Tax, LOP & Benefits
+- [x] **Milestone 12**: Leave Management Engine — Quotas, History, Automated Loss of Pay Deductions
+- [x] **Milestone 13**: Cashflow Accounting Fix — True Cash Outflow vs. Company-Retained LOP Savings
