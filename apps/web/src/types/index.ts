@@ -56,10 +56,17 @@ export interface MonthlyPayoutItem {
   month: string;
   year: number;
   amount: number;
+  grossSalary?: number;
+  taxDeduction?: number;
+  leaveDeduction?: number;
+  otherDeductions?: number;
+  totalDeductions?: number;
+  netSalary?: number;
   currency: string;
   status: 'PAID' | 'SCHEDULED';
   payoutDate: string;
   reason: string;
+  notes?: string;
 }
 
 export interface EmployeeDetail extends EmployeeListItem {

@@ -362,11 +362,11 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                         key={payout.id}
                         elevation={0}
                         sx={{
-                          p: 1.5,
+                          p: 1.75,
                           bgcolor: '#FFFFFF',
                           border: '1px solid #E2E8F0',
                           borderRadius: 2,
-                          '&:hover': { bgcolor: '#F8FAFC' },
+                          '&:hover': { borderColor: '#93C5FD', boxShadow: '0 2px 4px rgba(0,0,0,0.04)' },
                         }}
                       >
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -379,32 +379,94 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                             </Typography>
                           </Box>
                           <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#16A34A' }}>
-                              {formatCurrency(payout.amount, payout.currency)}
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#16A34A' }}>
+                              {payout.netSalary !== undefined
+                                ? formatCurrency(payout.netSalary, payout.currency)
+                                : formatCurrency(payout.amount, payout.currency)}
                             </Typography>
-                            <Chip
-                              icon={<CheckCircleOutlineIcon style={{ fontSize: 13 }} />}
-                              label={payout.status}
-                              size="small"
-                              sx={{
-                                height: 18,
-                                fontSize: '0.65rem',
-                                fontWeight: 700,
-                                bgcolor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
-                                color: payout.status === 'PAID' ? '#15803D' : '#2563EB',
-                                mt: 0.25,
-                              }}
-                            />
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem' }}>
+                              Net Take-Home
+                            </Typography>
                           </Box>
                         </Stack>
-                        <Divider sx={{ my: 1, borderColor: '#F1F5F9' }} />
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+
+                        {/* Deductions & Payslip Breakdown */}
+                        <Box sx={{ mt: 1.5, p: 1.25, bgcolor: '#F8FAFC', borderRadius: 1.5, border: '1px solid #F1F5F9' }}>
+                          <Stack spacing={0.5}>
+                            <Stack direction="row" justifyContent="space-between">
+                              <Typography variant="caption" color="text.secondary">
+                                Gross Base:
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                {formatCurrency(payout.grossSalary || payout.amount, payout.currency)}
+                              </Typography>
+                            </Stack>
+
+                            <Stack direction="row" justifyContent="space-between">
+                              <Typography variant="caption" sx={{ color: '#EF4444' }}>
+                                • Income Tax Withheld:
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                -{formatCurrency(payout.taxDeduction || 0, payout.currency)}
+                              </Typography>
+                            </Stack>
+
+                            {(payout.leaveDeduction || 0) > 0 && (
+                              <Stack direction="row" justifyContent="space-between">
+                                <Typography variant="caption" sx={{ color: '#EF4444' }}>
+                                  • Unpaid Leave Deduction:
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                  -{formatCurrency(payout.leaveDeduction || 0, payout.currency)}
+                                </Typography>
+                              </Stack>
+                            )}
+
+                            <Stack direction="row" justifyContent="space-between">
+                              <Typography variant="caption" sx={{ color: '#EF4444' }}>
+                                • Benefits & Retirement (5%):
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                -{formatCurrency(payout.otherDeductions || 0, payout.currency)}
+                              </Typography>
+                            </Stack>
+
+                            <Divider sx={{ my: 0.5 }} />
+
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                                Net Disbursed:
+                              </Typography>
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                <Chip
+                                  icon={<CheckCircleOutlineIcon style={{ fontSize: 13 }} />}
+                                  label={payout.status}
+                                  size="small"
+                                  sx={{
+                                    height: 18,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    bgcolor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
+                                    color: payout.status === 'PAID' ? '#15803D' : '#2563EB',
+                                  }}
+                                />
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#16A34A' }}>
+                                  {formatCurrency(payout.netSalary !== undefined ? payout.netSalary : payout.amount, payout.currency)}
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          </Stack>
+                        </Box>
+
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
                           <Typography variant="caption" color="text.secondary">
-                            Compensation Basis:
+                            Basis: {getReasonLabel(payout.reason as any)}
                           </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748B' }}>
-                            {getReasonLabel(payout.reason as any)}
-                          </Typography>
+                          {payout.notes && (
+                            <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic', maxWidth: '65%', textAlign: 'right' }}>
+                              {payout.notes}
+                            </Typography>
+                          )}
                         </Stack>
                       </Paper>
                     ))}

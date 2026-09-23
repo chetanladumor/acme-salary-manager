@@ -177,6 +177,10 @@ export class EmployeeService {
         salaryRecords: {
           orderBy: { effectiveFrom: 'desc' },
         },
+        payrollDisbursements: {
+          orderBy: { payoutDate: 'desc' },
+          take: 12,
+        },
       },
     });
 
@@ -206,49 +210,27 @@ export class EmployeeService {
     const tenureYears = Math.floor(totalMonths / 12);
     const tenureMonths = totalMonths % 12;
 
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-
-    const monthlyPayouts: Array<{
-      month: string;
-      year: number;
-      amount: number;
-      currency: string;
-      status: 'PAID' | 'SCHEDULED';
-      payoutDate: string;
-      reason: string;
-    }> = [];
-
-    // Calculate payouts for past months up to 12 months
-    for (let i = 0; i < 12; i++) {
-      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      if (monthDate < new Date(hireDate.getFullYear(), hireDate.getMonth(), 1)) {
-        break; // before hire date
-      }
-
-      const payoutDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 28);
-
-      const record =
-        employee.salaryRecords.find((rec) => {
-          const from = new Date(rec.effectiveFrom);
-          const to = rec.effectiveTo ? new Date(rec.effectiveTo) : null;
-          return from <= payoutDate && (!to || to >= payoutDate);
-        }) || employee.salaryRecords[0];
-
-      if (record) {
-        monthlyPayouts.push({
-          month: `${monthNames[monthDate.getMonth()]} ${monthDate.getFullYear()}`,
-          year: monthDate.getFullYear(),
-          amount: Math.round(Number(record.annualSalary) / 12),
-          currency: record.currency,
-          status: payoutDate <= now ? 'PAID' : 'SCHEDULED',
-          payoutDate: payoutDate.toISOString().split('T')[0],
-          reason: record.reason,
-        });
-      }
-    }
+    // Map physical database disbursement records
+    const monthlyPayouts = (employee.payrollDisbursements || []).map((p) => {
+      const matchedRecord = employee.salaryRecords.find((s) => s.id === p.salaryRecordId);
+      return {
+        id: p.id,
+        month: p.payPeriod,
+        year: p.year,
+        grossSalary: Number(p.grossSalary),
+        amount: Number(p.grossSalary), // Backward-compatible alias
+        taxDeduction: Number(p.taxDeduction),
+        leaveDeduction: Number(p.leaveDeduction),
+        otherDeductions: Number(p.otherDeductions),
+        totalDeductions: Number(p.totalDeductions),
+        netSalary: Number(p.netSalary),
+        currency: p.currency,
+        status: p.status as 'PAID' | 'SCHEDULED',
+        payoutDate: p.payoutDate.toISOString().split('T')[0],
+        reason: matchedRecord ? matchedRecord.reason : 'SCHEDULED_PAYROLL',
+        notes: p.notes,
+      };
+    });
 
     return {
       id: employee.id,

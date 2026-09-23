@@ -125,6 +125,17 @@ describe('Employee Module API', () => {
       expect(response.body.data.monthlyPayouts).toBeInstanceOf(Array);
       expect(response.body.data.monthlyPayouts.length).toBeGreaterThan(0);
       expect(response.body.data.monthlyPayouts[0].amount).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts[0].grossSalary).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts[0].taxDeduction).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts[0].netSalary).toBeGreaterThan(0);
+      expect(response.body.data.monthlyPayouts[0].totalDeductions).toBe(
+        response.body.data.monthlyPayouts[0].taxDeduction +
+        response.body.data.monthlyPayouts[0].leaveDeduction +
+        response.body.data.monthlyPayouts[0].otherDeductions
+      );
+      expect(response.body.data.monthlyPayouts[0].netSalary).toBe(
+        response.body.data.monthlyPayouts[0].grossSalary - response.body.data.monthlyPayouts[0].totalDeductions
+      );
       expect(['PAID', 'SCHEDULED']).toContain(response.body.data.monthlyPayouts[0].status);
       if (response.body.data.monthlyPayouts.length > 1) {
         expect(response.body.data.monthlyPayouts[1].status).toBe('PAID');
