@@ -167,7 +167,7 @@ export const AnalyticsDashboard: React.FC = () => {
                   Next Month Total Payroll Cashflow Forecast
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#94A3B8' }}>
-                  Projected monthly gross salary obligations for the upcoming pay cycle based on active workforce compensation
+                  Projected cash outflow required from company accounts (Net Pay + Taxes & Benefits). Unpaid leave (LOP) stays with the company.
                 </Typography>
               </Box>
             </Stack>
@@ -236,10 +236,10 @@ export const AnalyticsDashboard: React.FC = () => {
                     />
                   </Stack>
                   <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#38BDF8', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                    {formatCurrency(item.monthlyPayroll, item.currency)}
+                    {formatCurrency(item.payableGrossMonthlyPayroll || item.monthlyPayroll, item.currency)}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', fontSize: '0.68rem', mt: 0.25 }}>
-                    Gross Total Obligation
+                    Total Cash Outflow Needed
                   </Typography>
                 </Box>
 
@@ -259,22 +259,32 @@ export const AnalyticsDashboard: React.FC = () => {
                           Tax & Benefits:
                         </Typography>
                         <Typography variant="caption" sx={{ color: '#F87171', fontWeight: 600, fontSize: '0.7rem' }}>
-                          {formatCurrency(
-                            (item.deductionsMonthlyPayroll || Math.round(item.monthlyPayroll * 0.25)) -
-                              (item.leaveDeductionsMonthlyPayroll || 0),
-                            item.currency
-                          )}
+                          {formatCurrency(item.deductionsMonthlyPayroll || Math.round(item.monthlyPayroll * 0.25), item.currency)}
                         </Typography>
                       </Stack>
-                      {Boolean(item.leaveDeductionsMonthlyPayroll && item.leaveDeductionsMonthlyPayroll > 0) && (
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="caption" sx={{ color: '#F59E0B', fontSize: '0.65rem' }}>
-                            ↳ Unpaid Leave (LOP):
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#F59E0B', fontWeight: 600, fontSize: '0.68rem' }}>
-                            -{formatCurrency(item.leaveDeductionsMonthlyPayroll!, item.currency)}
-                          </Typography>
-                        </Stack>
+
+                      {Boolean(item.leaveDeductionsMonthlyPayroll && item.leaveDeductionsMonthlyPayroll > 0) ? (
+                        <Box sx={{ mt: 0.5, pt: 0.5, borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="caption" sx={{ color: '#38BDF8', fontSize: '0.65rem' }}>
+                              Retained (Unpaid LOP):
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#38BDF8', fontWeight: 600, fontSize: '0.68rem' }}>
+                              +{formatCurrency(item.leaveDeductionsMonthlyPayroll!, item.currency)}
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      ) : (
+                        <Box sx={{ mt: 0.5, pt: 0.5, borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>
+                              Contract Gross Base:
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500, fontSize: '0.68rem' }}>
+                              {formatCurrency(item.grossMonthlyPayroll || item.monthlyPayroll, item.currency)}
+                            </Typography>
+                          </Stack>
+                        </Box>
                       )}
                     </Stack>
                   </Box>

@@ -163,6 +163,7 @@ export interface CountryMetric {
   maxSalary: number;
   monthlyPayroll: number;
   grossMonthlyPayroll?: number;
+  payableGrossMonthlyPayroll?: number;
   netMonthlyPayroll?: number;
   deductionsMonthlyPayroll?: number;
   leaveDeductionsMonthlyPayroll?: number;
@@ -189,6 +190,7 @@ export interface AnalyticsOverview {
       headcount: number;
       monthlyPayroll: number;
       grossMonthlyPayroll?: number;
+      payableGrossMonthlyPayroll?: number;
       netMonthlyPayroll?: number;
       deductionsMonthlyPayroll?: number;
       leaveDeductionsMonthlyPayroll?: number;

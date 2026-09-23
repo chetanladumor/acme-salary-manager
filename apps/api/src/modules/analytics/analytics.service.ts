@@ -16,11 +16,12 @@ export interface CountryMetric {
   avgSalary: number;
   minSalary: number;
   maxSalary: number;
-  monthlyPayroll: number; // Gross monthly payroll
-  grossMonthlyPayroll: number;
-  netMonthlyPayroll: number;
-  deductionsMonthlyPayroll: number;
-  leaveDeductionsMonthlyPayroll?: number;
+  monthlyPayroll: number; // Cashflow obligation required (payableGross)
+  grossMonthlyPayroll: number; // Contractual base gross
+  payableGrossMonthlyPayroll?: number; // Cashflow obligation required
+  netMonthlyPayroll: number; // Cash outflow: Direct pay to employees
+  deductionsMonthlyPayroll: number; // Cash outflow: Taxes & benefits to authorities
+  leaveDeductionsMonthlyPayroll?: number; // Cash retained: Unpaid leave (LOP) savings
 }
 
 export interface ReasonMetric {
@@ -44,6 +45,7 @@ export interface AnalyticsOverview {
       headcount: number;
       monthlyPayroll: number;
       grossMonthlyPayroll: number;
+      payableGrossMonthlyPayroll?: number;
       netMonthlyPayroll: number;
       deductionsMonthlyPayroll: number;
       leaveDeductionsMonthlyPayroll?: number;
@@ -218,12 +220,17 @@ export class AnalyticsService {
         const scheduled = scheduledMap[item.currency];
         const grossMonthly = scheduled && scheduled.gross > 0 ? scheduled.gross : fallbackMonthly;
         const leaveDeductions = scheduled ? scheduled.leave : 0;
-        const deductionsMonthly =
-          scheduled && scheduled.totalDeductions > 0
-            ? scheduled.totalDeductions
+        // Taxes & benefits remitted to govt/insurers (Cash Outflow)
+        const taxAndBenefitsOutflow =
+          scheduled && (scheduled.tax + scheduled.other > 0)
+            ? scheduled.tax + scheduled.other
             : Math.round(fallbackMonthly * deductionRate);
+        // Direct pay disbursed to employees' accounts (Cash Outflow)
         const netMonthly =
-          scheduled && scheduled.net > 0 ? scheduled.net : Math.max(0, grossMonthly - deductionsMonthly);
+          scheduled && scheduled.net > 0 ? scheduled.net : Math.max(0, grossMonthly - leaveDeductions - taxAndBenefitsOutflow);
+        // Total cash outflow required from company accounts (Net Pay + Tax/Benefits)
+        // Note: Unpaid leave (LOP) stays in company account and is never disbursed!
+        const payableGross = Math.max(0, grossMonthly - leaveDeductions);
 
         return {
           country: countryName,
@@ -233,10 +240,11 @@ export class AnalyticsService {
           avgSalary: avg,
           minSalary: min,
           maxSalary: max,
-          monthlyPayroll: grossMonthly,
+          monthlyPayroll: payableGross,
           grossMonthlyPayroll: grossMonthly,
+          payableGrossMonthlyPayroll: payableGross,
           netMonthlyPayroll: netMonthly,
-          deductionsMonthlyPayroll: deductionsMonthly,
+          deductionsMonthlyPayroll: taxAndBenefitsOutflow,
           leaveDeductionsMonthlyPayroll: leaveDeductions,
         };
       })
@@ -273,6 +281,7 @@ export class AnalyticsService {
           headcount: c.headcount,
           monthlyPayroll: c.monthlyPayroll,
           grossMonthlyPayroll: c.grossMonthlyPayroll,
+          payableGrossMonthlyPayroll: c.payableGrossMonthlyPayroll,
           netMonthlyPayroll: c.netMonthlyPayroll,
           deductionsMonthlyPayroll: c.deductionsMonthlyPayroll,
           leaveDeductionsMonthlyPayroll: c.leaveDeductionsMonthlyPayroll,
