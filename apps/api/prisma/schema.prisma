@@ -1,0 +1,104 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  HR_ADMIN
+  HR_VIEWER
+}
+
+enum EmploymentStatus {
+  ACTIVE     // Currently employed and active on payroll
+  ON_LEAVE   // Extended leave (parental, medical, sabbatical); contract active
+  INACTIVE   // Former employee who left the company (resigned/terminated); retained for audit & history
+}
+
+enum ChangeReason {
+  NEW_HIRE
+  ANNUAL_REVIEW
+  PROMOTION
+  MARKET_ADJUSTMENT
+  EQUITY_REALIGNMENT
+  LATERAL_MOVE
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         Role       @default(HR_ADMIN)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model Employee {
+  id           String           @id @default(uuid())
+  employeeCode String           @unique
+  firstName    String
+  lastName     String
+  email        String           @unique
+  country      String
+  countryCode  String
+  department   String
+  jobTitle     String
+  status       EmploymentStatus @default(ACTIVE)
+  hireDate     DateTime
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  salaryRecords SalaryRecord[]
+  auditLogs     AuditLog[]
+
+  @@index([country])
+  @@index([department])
+  @@index([jobTitle])
+  @@index([status])
+  @@index([lastName, firstName])
+  @@map("employees")
+}
+
+model SalaryRecord {
+  id            String       @id @default(uuid())
+  employeeId    String
+  employee      Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  annualSalary  Decimal      @db.Decimal(12, 2)
+  currency      String
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  reason        ChangeReason @default(NEW_HIRE)
+  createdBy     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([employeeId, effectiveFrom(sort: Desc)])
+  @@index([currency, annualSalary])
+  @@index([effectiveTo])
+  @@map("salary_records")
+}
+
+model AuditLog {
+  id         String    @id @default(uuid())
+  actorId    String?
+  actor      User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  employeeId String?
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([employeeId])
+  @@index([actorId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
