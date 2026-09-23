@@ -30,6 +30,8 @@ services:
       NODE_ENV: production
       CLIENT_URL: http://localhost:5174
       DATABASE_URL: postgresql://postgres:postgrespassword@postgres:5432/acme_salary_db?schema=public
+      JWT_SECRET: supersecretjwtkeyforacmehrmanager2026!dev
+      SEED_ADMIN_PASSWORD: "Admin#Pass2026!"
     depends_on:
       postgres:
         condition: service_healthy

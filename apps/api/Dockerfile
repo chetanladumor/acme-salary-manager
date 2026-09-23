@@ -2,14 +2,18 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy root workspace and api package definitions
+# Copy root workspace and package definitions
 COPY package.json package-lock.json ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 
 RUN npm install --workspace=@acme/api
 
-# Copy source code and build
+# Copy Prisma schema and generate Prisma Client
+COPY apps/api/prisma ./apps/api/prisma
+RUN npm run db:generate --workspace=@acme/api
+
+# Copy source code and compile TypeScript
 COPY apps/api/tsconfig.json ./apps/api/
 COPY apps/api/src ./apps/api/src
 
@@ -29,6 +33,9 @@ COPY apps/web/package.json ./apps/web/
 
 RUN npm install --omit=dev --workspace=@acme/api
 
+# Copy compiled artifacts and generated Prisma client from builder
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
 EXPOSE 5001

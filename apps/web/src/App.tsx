@@ -1,119 +1,233 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Container,
   Box,
+  Stack,
+  Typography,
+  Grid,
   Card,
   CardContent,
-  Chip,
-  CircularProgress,
-  Stack,
+  Alert,
 } from '@mui/material';
-import PaidIcon from '@mui/icons-material/Paid';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-
-interface HealthResponse {
-  status: string;
-  timestamp: string;
-  service: string;
-  environment: string;
-}
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import PublicIcon from '@mui/icons-material/Public';
+import DomainIcon from '@mui/icons-material/Domain';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { useSelector } from 'react-redux';
+import { RootState } from './app/store';
+import {
+  useGetEmployeesQuery,
+  useGetFacetsQuery,
+} from './features/api/apiSlice';
+import { EmployeeFilterParams } from './types';
+import { Navbar } from './components/layout/Navbar';
+import { FilterBar } from './components/employees/FilterBar';
+import { EmployeeTable } from './components/employees/EmployeeTable';
+import { EmployeeDetailDrawer } from './components/employees/EmployeeDetailDrawer';
+import { LoginScreen } from './components/auth/LoginScreen';
 
 export const App: React.FC = () => {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`API responded with HTTP ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data: HealthResponse) => {
-        setHealth(data);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
+  // Filter & Pagination State
+  const [filters, setFilters] = useState<EmployeeFilterParams>({
+    page: 1,
+    limit: 25,
+    sortBy: 'employeeCode',
+    sortOrder: 'asc',
+  });
+
+  // Queries (only active when user is authenticated)
+  const { data: facets } = useGetFacetsQuery(undefined, { skip: !isAuthenticated });
+  const {
+    data: employeesData,
+    isLoading: isEmployeesLoading,
+    error: employeesError,
+  } = useGetEmployeesQuery(filters, { skip: !isAuthenticated });
+
+  const handleFilterChange = (newFilters: Partial<EmployeeFilterParams>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      page: 1,
+      limit: 25,
+      sortBy: 'employeeCode',
+      sortOrder: 'asc',
+    });
+  };
+
+  const handleSortChange = (column: string) => {
+    setFilters((prev) => {
+      const isAsc = prev.sortBy === column && prev.sortOrder === 'asc';
+      return {
+        ...prev,
+        sortBy: column,
+        sortOrder: isAsc ? 'desc' : 'asc',
+        page: 1,
+      };
+    });
+  };
+
+  // If not authenticated, show dedicated full-page Login Screen
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
+
+  // Authenticated Executive Portal
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar position="static" color="primary" elevation={0}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <PaidIcon sx={{ color: 'secondary.light' }} />
-            <Typography variant="h6" component="div">
-              ACME Salary Manager
-            </Typography>
-          </Stack>
-          <Chip
-            label="HR Manager Portal"
-            size="small"
-            sx={{ bgcolor: 'primary.light', color: 'common.white', fontWeight: 500 }}
-          />
-        </Toolbar>
-      </AppBar>
+      {/* Executive Navbar */}
+      <Navbar
+        onOpenLogin={() => {}}
+        totalEmployees={employeesData?.pagination.total}
+      />
 
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Stack spacing={4}>
-          <Box>
-            <Typography variant="h5" gutterBottom>
-              Workforce Compensation System
-            </Typography>
-            <Typography variant="subtitle1">
-              Internal HR management system initialized for 10,000 global employee records.
-            </Typography>
-          </Box>
-
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Backend Connection Status
+      <Container maxWidth="xl" sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
+        <Stack spacing={3}>
+          {/* Page Title & Intro */}
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1}>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
+                Workforce Compensation Directory
               </Typography>
-              {loading && (
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 2 }}>
-                  <CircularProgress size={24} />
-                  <Typography variant="body2" color="text.secondary">
-                    Connecting to backend service (/api/health)...
-                  </Typography>
-                </Stack>
-              )}
+              <Typography variant="body2" color="text.secondary">
+                Centralized HR compensation management across global jurisdictions.
+              </Typography>
+            </Box>
+          </Stack>
 
-              {error && (
-                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 1 }}>
-                  <ErrorOutlineIcon color="error" />
-                  <Typography variant="body2" color="error">
-                    Backend service unreachable: {error}
-                  </Typography>
-                </Stack>
-              )}
-
-              {health && (
-                <Stack spacing={1} sx={{ mt: 1 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <CheckCircleOutlineIcon color="success" fontSize="small" />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      Service: {health.service} ({health.status.toUpperCase()})
-                    </Typography>
+          {/* Quick Metrics Bar */}
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3}>
+              <Card>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex' }}>
+                      <PeopleAltIcon fontSize="small" />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Total Headcount
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                        {employeesData ? employeesData.pagination.total.toLocaleString() : '10,000'}
+                      </Typography>
+                    </Box>
                   </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    Environment: {health.environment} | Timestamp: {health.timestamp}
-                  </Typography>
-                </Stack>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={6} sm={3}>
+              <Card>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#F0FDF4', color: '#16A34A', display: 'flex' }}>
+                      <PublicIcon fontSize="small" />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Global Regions
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                        {facets ? facets.countries.length : 7} Countries
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={6} sm={3}>
+              <Card>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#FAF5FF', color: '#9333EA', display: 'flex' }}>
+                      <DomainIcon fontSize="small" />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Departments
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                        {facets ? facets.departments.length : 8} Divisions
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={6} sm={3}>
+              <Card>
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#FFFBEB', color: '#D97706', display: 'flex' }}>
+                      <AccountBalanceWalletIcon fontSize="small" />
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Currencies
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
+                        {facets ? facets.currencies.length : 7} Currencies
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {employeesError && (
+            <Alert severity="error">
+              Unable to load employee compensation records. Please verify connection to the backend.
+            </Alert>
+          )}
+
+          {/* Filter Bar */}
+          <FilterBar
+            facets={facets}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onReset={handleResetFilters}
+            totalResults={employeesData?.pagination.total}
+          />
+
+          {/* Employee Directory Table */}
+          <EmployeeTable
+            employees={employeesData?.employees || []}
+            pagination={
+              employeesData?.pagination || {
+                total: 0,
+                page: 1,
+                limit: 25,
+                totalPages: 0,
+                hasNext: false,
+                hasPrev: false,
+              }
+            }
+            isLoading={isEmployeesLoading}
+            onPageChange={(page) => handleFilterChange({ page })}
+            onLimitChange={(limit) => handleFilterChange({ limit, page: 1 })}
+            onSortChange={handleSortChange}
+            sortBy={filters.sortBy || 'employeeCode'}
+            sortOrder={filters.sortOrder || 'asc'}
+            onSelectEmployee={(id) => setSelectedEmployeeId(id)}
+          />
         </Stack>
       </Container>
+
+      {/* Slide-Over Dossier Drawer */}
+      <EmployeeDetailDrawer
+        employeeId={selectedEmployeeId}
+        open={Boolean(selectedEmployeeId)}
+        onClose={() => setSelectedEmployeeId(null)}
+      />
     </Box>
   );
 };
