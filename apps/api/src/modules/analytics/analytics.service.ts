@@ -20,6 +20,7 @@ export interface CountryMetric {
   grossMonthlyPayroll: number;
   netMonthlyPayroll: number;
   deductionsMonthlyPayroll: number;
+  leaveDeductionsMonthlyPayroll?: number;
 }
 
 export interface ReasonMetric {
@@ -45,6 +46,7 @@ export interface AnalyticsOverview {
       grossMonthlyPayroll: number;
       netMonthlyPayroll: number;
       deductionsMonthlyPayroll: number;
+      leaveDeductionsMonthlyPayroll?: number;
     }>;
   };
   departments: DepartmentMetric[];
@@ -122,17 +124,54 @@ export class AnalyticsService {
       })
       .sort((a, b) => b.headcount - a.headcount);
 
-    // 3. Country & Currency Breakdown
-    const countryEmployees = await prisma.employee.findMany({
-      select: {
-        country: true,
-        countryCode: true,
-        salaryRecords: {
-          where: { effectiveTo: null },
-          select: { annualSalary: true, currency: true },
+    // 3. Country & Currency Breakdown + Scheduled Next-Month Disbursements
+    const [countryEmployees, scheduledDisbursements] = await Promise.all([
+      prisma.employee.findMany({
+        select: {
+          country: true,
+          countryCode: true,
+          salaryRecords: {
+            where: { effectiveTo: null },
+            select: { annualSalary: true, currency: true },
+          },
         },
-      },
-    });
+      }),
+      prisma.payrollDisbursement.groupBy({
+        by: ['currency'],
+        where: { status: 'SCHEDULED' },
+        _sum: {
+          grossSalary: true,
+          taxDeduction: true,
+          leaveDeduction: true,
+          otherDeductions: true,
+          totalDeductions: true,
+          netSalary: true,
+        },
+      }),
+    ]);
+
+    const scheduledMap: Record<
+      string,
+      {
+        gross: number;
+        net: number;
+        tax: number;
+        leave: number;
+        other: number;
+        totalDeductions: number;
+      }
+    > = {};
+
+    for (const s of scheduledDisbursements) {
+      scheduledMap[s.currency] = {
+        gross: Math.round(Number(s._sum.grossSalary || 0)),
+        net: Math.round(Number(s._sum.netSalary || 0)),
+        tax: Math.round(Number(s._sum.taxDeduction || 0)),
+        leave: Math.round(Number(s._sum.leaveDeduction || 0)),
+        other: Math.round(Number(s._sum.otherDeductions || 0)),
+        totalDeductions: Math.round(Number(s._sum.totalDeductions || 0)),
+      };
+    }
 
     const countryMap: Record<
       string,
@@ -163,7 +202,7 @@ export class AnalyticsService {
         const min = salaries.length > 0 ? Math.min(...salaries) : 0;
         const max = salaries.length > 0 ? Math.max(...salaries) : 0;
 
-        const monthlySum = Math.round(sum / 12);
+        const fallbackMonthly = Math.round(sum / 12);
         const DEDUCTION_RATES: Record<string, number> = {
           US: 0.25,
           GB: 0.25,
@@ -174,8 +213,17 @@ export class AnalyticsService {
           IN: 0.23,
         };
         const deductionRate = DEDUCTION_RATES[item.code] || 0.25;
-        const netMonthly = Math.round(monthlySum * (1 - deductionRate));
-        const deductionsMonthly = monthlySum - netMonthly;
+
+        // Use actual scheduled pay cycle from database if available (reflecting unpaid leave deductions)
+        const scheduled = scheduledMap[item.currency];
+        const grossMonthly = scheduled && scheduled.gross > 0 ? scheduled.gross : fallbackMonthly;
+        const leaveDeductions = scheduled ? scheduled.leave : 0;
+        const deductionsMonthly =
+          scheduled && scheduled.totalDeductions > 0
+            ? scheduled.totalDeductions
+            : Math.round(fallbackMonthly * deductionRate);
+        const netMonthly =
+          scheduled && scheduled.net > 0 ? scheduled.net : Math.max(0, grossMonthly - deductionsMonthly);
 
         return {
           country: countryName,
@@ -185,10 +233,11 @@ export class AnalyticsService {
           avgSalary: avg,
           minSalary: min,
           maxSalary: max,
-          monthlyPayroll: monthlySum,
-          grossMonthlyPayroll: monthlySum,
+          monthlyPayroll: grossMonthly,
+          grossMonthlyPayroll: grossMonthly,
           netMonthlyPayroll: netMonthly,
           deductionsMonthlyPayroll: deductionsMonthly,
+          leaveDeductionsMonthlyPayroll: leaveDeductions,
         };
       })
       .sort((a, b) => b.headcount - a.headcount);
@@ -226,6 +275,7 @@ export class AnalyticsService {
           grossMonthlyPayroll: c.grossMonthlyPayroll,
           netMonthlyPayroll: c.netMonthlyPayroll,
           deductionsMonthlyPayroll: c.deductionsMonthlyPayroll,
+          leaveDeductionsMonthlyPayroll: c.leaveDeductionsMonthlyPayroll,
         })),
       },
       departments,

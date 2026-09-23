@@ -178,20 +178,48 @@ export const AnalyticsDashboard: React.FC = () => {
             />
           </Stack>
 
-          <Grid container spacing={2}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
+                xl: 'repeat(7, 1fr)',
+              },
+              gap: 2,
+            }}
+          >
             {kpis.nextMonthPayrollByCurrency?.map((item) => (
-              <Grid item xs={12} sm={6} md={3} lg={1.71} key={item.country}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    bgcolor: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: 2,
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                    <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
+              <Paper
+                key={item.country}
+                elevation={0}
+                sx={{
+                  p: 2,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: 2,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.08)',
+                    borderColor: 'rgba(56, 189, 248, 0.3)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1, minHeight: 24 }}>
+                    <Typography
+                      variant="caption"
+                      noWrap
+                      title={item.country}
+                      sx={{ color: '#94A3B8', fontWeight: 600, fontSize: '0.75rem', mr: 1, maxWidth: '70%' }}
+                    >
                       {item.country}
                     </Typography>
                     <Chip
@@ -203,44 +231,61 @@ export const AnalyticsDashboard: React.FC = () => {
                         fontWeight: 700,
                         bgcolor: 'rgba(96, 165, 250, 0.2)',
                         color: '#93C5FD',
+                        flexShrink: 0,
                       }}
                     />
                   </Stack>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#38BDF8', letterSpacing: '-0.02em' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#38BDF8', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                     {formatCurrency(item.monthlyPayroll, item.currency)}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', fontSize: '0.68rem', mt: 0.25 }}>
                     Gross Total Obligation
                   </Typography>
+                </Box>
 
-                  <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                    <Stack spacing={0.25}>
-                      <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>
+                <Box sx={{ mt: 1.5 }}>
+                  <Box sx={{ pt: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <Stack spacing={0.35}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.68rem' }}>
                           Net Direct Pay:
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#34D399', fontWeight: 700, fontSize: '0.68rem' }}>
+                        <Typography variant="caption" sx={{ color: '#34D399', fontWeight: 700, fontSize: '0.7rem' }}>
                           {formatCurrency(item.netMonthlyPayroll || Math.round(item.monthlyPayroll * 0.75), item.currency)}
                         </Typography>
                       </Stack>
-                      <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.65rem' }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.68rem' }}>
                           Tax & Benefits:
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#F87171', fontWeight: 600, fontSize: '0.68rem' }}>
-                          {formatCurrency(item.deductionsMonthlyPayroll || Math.round(item.monthlyPayroll * 0.25), item.currency)}
+                        <Typography variant="caption" sx={{ color: '#F87171', fontWeight: 600, fontSize: '0.7rem' }}>
+                          {formatCurrency(
+                            (item.deductionsMonthlyPayroll || Math.round(item.monthlyPayroll * 0.25)) -
+                              (item.leaveDeductionsMonthlyPayroll || 0),
+                            item.currency
+                          )}
                         </Typography>
                       </Stack>
+                      {Boolean(item.leaveDeductionsMonthlyPayroll && item.leaveDeductionsMonthlyPayroll > 0) && (
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Typography variant="caption" sx={{ color: '#F59E0B', fontSize: '0.65rem' }}>
+                            ↳ Unpaid Leave (LOP):
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#F59E0B', fontWeight: 600, fontSize: '0.68rem' }}>
+                            -{formatCurrency(item.leaveDeductionsMonthlyPayroll!, item.currency)}
+                          </Typography>
+                        </Stack>
+                      )}
                     </Stack>
                   </Box>
 
-                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 1 }}>
+                  <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 1, fontSize: '0.68rem' }}>
                     {item.headcount.toLocaleString()} active employees
                   </Typography>
-                </Paper>
-              </Grid>
+                </Box>
+              </Paper>
             ))}
-          </Grid>
+          </Box>
         </CardContent>
       </Card>
 

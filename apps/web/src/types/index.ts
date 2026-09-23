@@ -165,6 +165,7 @@ export interface CountryMetric {
   grossMonthlyPayroll?: number;
   netMonthlyPayroll?: number;
   deductionsMonthlyPayroll?: number;
+  leaveDeductionsMonthlyPayroll?: number;
 }
 
 export interface ReasonMetric {
@@ -190,6 +191,7 @@ export interface AnalyticsOverview {
       grossMonthlyPayroll?: number;
       netMonthlyPayroll?: number;
       deductionsMonthlyPayroll?: number;
+      leaveDeductionsMonthlyPayroll?: number;
     }>;
   };
   departments: DepartmentMetric[];
