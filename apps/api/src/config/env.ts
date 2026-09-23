@@ -8,6 +8,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CLIENT_URL: z.string().default('http://localhost:5174'),
   DATABASE_URL: z.string().optional(),
+  JWT_SECRET: z.string().default('dev_jwt_secret_key_acme_2026_super_secure'),
+  SEED_ADMIN_PASSWORD: z.string().default('Admin#Pass2026!'),
 });
 
 const _env = envSchema.safeParse(process.env);
