@@ -72,10 +72,7 @@ export const SalaryAdjustmentModal: React.FC<SalaryAdjustmentModalProps> = ({
         },
       }).unwrap();
 
-      setSuccessMessage('Compensation revision recorded successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 1000);
+      onClose();
     } catch (err: any) {
       setErrorMessage(
         err?.data?.error?.message || 'Failed to apply salary adjustment. Please verify inputs.'
