@@ -13,7 +13,7 @@ export class AuthController {
         data: result,
       });
     } catch (err: any) {
-      if (err.name === 'ZodError') {
+      if (err.name === 'ZodError') { // if(err instanceof ZodError) if we use unknown
         res.status(400).json({
           success: false,
           error: {

@@ -1,3 +1,4 @@
+// to validate and sanitize incoming payloads before they hit our controllers—rejecting invalid emails and missing passwords with a 400 Bad Request to protect our database and save CPU cycles on bcrypt hashing
 import { z } from 'zod';
 
 export const loginSchema = z.object({

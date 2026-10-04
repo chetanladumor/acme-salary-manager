@@ -6,7 +6,7 @@ const server = app.listen(env.PORT, () => {
   console.log(`📡 Environment: ${env.NODE_ENV}`);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', () => {// signal terminate -> Please finish what you are doing and shut down cleanly 
   console.log('SIGTERM signal received: closing HTTP server');
   server.close(() => {
     console.log('HTTP server closed');

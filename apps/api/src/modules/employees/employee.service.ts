@@ -25,11 +25,11 @@ export class EmployeeService {
       sortOrder,
     } = query;
 
-    const where: Prisma.EmployeeWhereInput = {};
+    const where: Prisma.EmployeeWhereInput = {}; // also we have Prisma.EmployeeCreateInput, Prisma.EmployeeUpdateInput and Prisma.EmployeeOrderByWithRelationInput
 
     // 1. Full-text search on employeeCode, names, and email
     if (search && search.length > 0) {
-      const terms = search.split(/\s+/).filter(Boolean);
+      const terms = search.split(/\s+/).filter(Boolean); // "   Ingrid     Young   " -> ["", "Ingrid", "Young", ""] -> ["Ingrid", "Young"];
       if (terms.length === 1) {
         const term = terms[0];
         where.OR = [
@@ -60,11 +60,11 @@ export class EmployeeService {
     }
 
     if (jobTitle) {
-      where.jobTitle = { contains: jobTitle, mode: 'insensitive' };
+      where.jobTitle = { contains: jobTitle, mode: 'insensitive' }; // flexible matching
     }
 
     if (status) {
-      where.status = status;
+      where.status = status; // Enum
     }
 
     // 3. Compensation filters on active salary record
@@ -86,7 +86,7 @@ export class EmployeeService {
       }
 
       where.salaryRecords = {
-        some: salaryCondition,
+        some: salaryCondition, // we can use some(match if at least one), every(match if all) or none(match if none) for 1 to many relationship
       };
     }
 
@@ -143,12 +143,12 @@ export class EmployeeService {
         hireDate: emp.hireDate,
         currentSalary: activeSalary
           ? {
-              id: activeSalary.id,
-              annualSalary: Number(activeSalary.annualSalary),
-              currency: activeSalary.currency,
-              effectiveFrom: activeSalary.effectiveFrom,
-              reason: activeSalary.reason,
-            }
+            id: activeSalary.id,
+            annualSalary: Number(activeSalary.annualSalary),
+            currency: activeSalary.currency,
+            effectiveFrom: activeSalary.effectiveFrom,
+            reason: activeSalary.reason,
+          }
           : null,
       };
     });
@@ -210,7 +210,7 @@ export class EmployeeService {
     // Calculate tenure in years and months
     const now = new Date();
     const hireDate = new Date(employee.hireDate);
-    const totalMonths = (now.getFullYear() - hireDate.getFullYear()) * 12 + (now.getMonth() - hireDate.getMonth());
+    const totalMonths = (now.getFullYear() - hireDate.getFullYear()) * 12 + (now.getMonth() - hireDate.getMonth()); // (2026-2024) *12 + (9-4)
     const tenureYears = Math.floor(totalMonths / 12);
     const tenureMonths = totalMonths % 12;
 
@@ -288,13 +288,13 @@ export class EmployeeService {
       })),
       currentSalary: activeSalary
         ? {
-            id: activeSalary.id,
-            annualSalary: Number(activeSalary.annualSalary),
-            monthlySalary: Math.round(Number(activeSalary.annualSalary) / 12),
-            currency: activeSalary.currency,
-            effectiveFrom: activeSalary.effectiveFrom,
-            reason: activeSalary.reason,
-          }
+          id: activeSalary.id,
+          annualSalary: Number(activeSalary.annualSalary),
+          monthlySalary: Math.round(Number(activeSalary.annualSalary) / 12),
+          currency: activeSalary.currency,
+          effectiveFrom: activeSalary.effectiveFrom,
+          reason: activeSalary.reason,
+        }
         : null,
       salaryHistory: history,
       monthlyPayouts,
@@ -303,7 +303,7 @@ export class EmployeeService {
     };
   }
 
-  static async getFilterFacets() {
+  static async getFilterFacets() {// we cache the distinct country, department.. once and cache and use that so no need to run everytime and we cna get latest data on frontend
     // Check in-memory cache
     if (this.facetsCache && this.facetsCache.expiresAt > Date.now()) {
       return this.facetsCache.data;

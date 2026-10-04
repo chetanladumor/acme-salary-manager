@@ -17,7 +17,7 @@ export class AuthService {
     });
 
     if (!user) {
-      const error: any = new Error('Invalid email or password');
+      const error: any = new Error('Invalid email or password'); // Error class has two properties name and message to byopass that and add statusCode and code we use any
       error.statusCode = 401;
       error.code = 'INVALID_CREDENTIALS';
       throw error;

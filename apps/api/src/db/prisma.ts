@@ -1,3 +1,4 @@
+// Prisma Client singleton pattern: Its main purpose is to prevent database connection pool exhaustion during local development when files are auto-reloaded.
 import { PrismaClient } from '@prisma/client';
 
 declare global {

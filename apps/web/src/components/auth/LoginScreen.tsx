@@ -33,7 +33,7 @@ export const LoginScreen: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const result = await loginApi({ email, password }).unwrap();
+      const result = await loginApi({ email, password }).unwrap();  // mutation resolve an object to either data or erro , by using unwrap it explicitly reject to catch so work like try catch
       dispatch(setCredentials(result));
     } catch (err: any) {
       setErrorMessage(
