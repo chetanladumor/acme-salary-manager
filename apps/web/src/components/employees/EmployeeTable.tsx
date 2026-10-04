@@ -1,23 +1,5 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  Avatar,
-  Stack,
-  Typography,
-  TablePagination,
-  Button,
-  Skeleton,
-  Box,
-  TableSortLabel,
-} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { ArrowUp, ArrowDown, ArrowUpDown, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { EmployeeListItem, PaginationMeta, EmploymentStatus } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -33,65 +15,29 @@ interface EmployeeTableProps {
   onSelectEmployee: (employeeId: string) => void;
 }
 
-const getStatusChip = (status: EmploymentStatus) => {
+const getStatusBadge = (status: EmploymentStatus) => {
   switch (status) {
     case 'ACTIVE':
-      return (
-        <Chip
-          label="Active"
-          size="small"
-          sx={{
-            bgcolor: '#ECFDF5',
-            color: '#065F46',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            border: '1px solid #A7F3D0',
-          }}
-        />
-      );
+      return <span className="badge badge-active">Active</span>;
     case 'ON_LEAVE':
-      return (
-        <Chip
-          label="On Leave"
-          size="small"
-          sx={{
-            bgcolor: '#FFFBEB',
-            color: '#92400E',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            border: '1px solid #FDE68A',
-          }}
-        />
-      );
+      return <span className="badge badge-onleave">On Leave</span>;
     case 'INACTIVE':
-      return (
-        <Chip
-          label="Inactive"
-          size="small"
-          sx={{
-            bgcolor: '#F1F5F9',
-            color: '#475569',
-            fontWeight: 600,
-            fontSize: '0.75rem',
-            border: '1px solid #CBD5E1',
-          }}
-        />
-      );
+      return <span className="badge badge-inactive">Inactive</span>;
   }
 };
 
-const getDepartmentColor = (dept: string) => {
+const getDepartmentStyle = (dept: string) => {
   switch (dept) {
     case 'Engineering':
-      return '#2563EB'; // Blue
+      return { color: '#2563EB', backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' };
     case 'Product':
-      return '#7C3AED'; // Purple
+      return { color: '#7C3AED', backgroundColor: '#F5F3FF', borderColor: '#DDD6FE' };
     case 'Sales':
-      return '#059669'; // Emerald
+      return { color: '#059669', backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' };
     case 'Finance':
-      return '#D97706'; // Amber
+      return { color: '#D97706', backgroundColor: '#FFFBEB', borderColor: '#FDE68A' };
     default:
-      return '#475569'; // Slate
+      return { color: '#475569', backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' };
   }
 };
 
@@ -106,257 +52,284 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   sortOrder,
   onSelectEmployee,
 }) => {
-  const handleChangePage = (_: unknown, newPage: number) => {
-    onPageChange(newPage + 1); // MUI is 0-indexed, our API is 1-indexed
-  };
+  const startRecord = (pagination.page - 1) * pagination.limit + 1;
+  const endRecord = Math.min(pagination.page * pagination.limit, pagination.total);
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onLimitChange(parseInt(event.target.value, 10));
-    onPageChange(1);
+  const renderSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <ArrowUpDown size={14} style={{ opacity: 0.4 }} />;
+    }
+    return sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
   };
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden', border: '1px solid #E2E8F0', borderRadius: 2 }}>
-      <TableContainer sx={{ maxHeight: 680 }}>
-        <Table stickyHeader size="medium">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
-                <TableSortLabel
-                  active={sortBy === 'employeeCode'}
-                  direction={sortBy === 'employeeCode' ? sortOrder : 'asc'}
-                  onClick={() => onSortChange('employeeCode')}
-                >
-                  Code
-                </TableSortLabel>
-              </TableCell>
+    <div style={{ width: '100%' }}>
+      <div className="table-container">
+        <table className="table">
+          <thead>
+            <tr>
+              <th
+                className="sortable"
+                onClick={() => onSortChange('employeeCode')}
+                style={{ width: '120px' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Code</span>
+                  {renderSortIcon('employeeCode')}
+                </div>
+              </th>
 
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
-                <TableSortLabel
-                  active={sortBy === 'lastName'}
-                  direction={sortBy === 'lastName' ? sortOrder : 'asc'}
-                  onClick={() => onSortChange('lastName')}
-                >
-                  Employee
-                </TableSortLabel>
-              </TableCell>
+              <th
+                className="sortable"
+                onClick={() => onSortChange('lastName')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Employee</span>
+                  {renderSortIcon('lastName')}
+                </div>
+              </th>
 
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
-                <TableSortLabel
-                  active={sortBy === 'department'}
-                  direction={sortBy === 'department' ? sortOrder : 'asc'}
-                  onClick={() => onSortChange('department')}
-                >
-                  Department
-                </TableSortLabel>
-              </TableCell>
+              <th
+                className="sortable"
+                onClick={() => onSortChange('department')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Department</span>
+                  {renderSortIcon('department')}
+                </div>
+              </th>
 
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
-                <TableSortLabel
-                  active={sortBy === 'jobTitle'}
-                  direction={sortBy === 'jobTitle' ? sortOrder : 'asc'}
-                  onClick={() => onSortChange('jobTitle')}
-                >
-                  Job Title
-                </TableSortLabel>
-              </TableCell>
+              <th
+                className="sortable"
+                onClick={() => onSortChange('jobTitle')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Job Title</span>
+                  {renderSortIcon('jobTitle')}
+                </div>
+              </th>
 
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
-                <TableSortLabel
-                  active={sortBy === 'country'}
-                  direction={sortBy === 'country' ? sortOrder : 'asc'}
-                  onClick={() => onSortChange('country')}
-                >
-                  Country
-                </TableSortLabel>
-              </TableCell>
+              <th
+                className="sortable"
+                onClick={() => onSortChange('country')}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Country</span>
+                  {renderSortIcon('country')}
+                </div>
+              </th>
 
-              <TableCell sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>Status</TableCell>
+              <th style={{ width: '100px' }}>Status</th>
 
-              <TableCell align="right" sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
+              <th style={{ textAlign: 'right', width: '150px' }}>
                 Annual Salary
-              </TableCell>
+              </th>
 
-              <TableCell align="center" sx={{ fontWeight: 700, bgcolor: '#F8FAFC' }}>
+              <th style={{ textAlign: 'center', width: '100px' }}>
                 Action
-              </TableCell>
-            </TableRow>
-          </TableHead>
+              </th>
+            </tr>
+          </thead>
 
-          <TableBody>
+          <tbody>
             {isLoading ? (
-              Array.from({ length: 10 }).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><Skeleton width={80} /></TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Skeleton variant="circular" width={32} height={32} />
-                      <Box sx={{ width: '100%' }}>
-                        <Skeleton width={120} height={18} />
-                        <Skeleton width={160} height={14} />
-                      </Box>
-                    </Stack>
-                  </TableCell>
-                  <TableCell><Skeleton width={90} /></TableCell>
-                  <TableCell><Skeleton width={140} /></TableCell>
-                  <TableCell><Skeleton width={80} /></TableCell>
-                  <TableCell><Skeleton width={60} /></TableCell>
-                  <TableCell align="right"><Skeleton width={90} sx={{ ml: 'auto' }} /></TableCell>
-                  <TableCell align="center"><Skeleton width={80} sx={{ mx: 'auto' }} /></TableCell>
-                </TableRow>
+              Array.from({ length: 8 }).map((_, index) => (
+                <tr key={index}>
+                  <td colSpan={8} style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    Loading employee directory records...
+                  </td>
+                </tr>
               ))
             ) : employees.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '48px 16px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '1.1rem', marginBottom: '6px' }}>
                     No matching employees found
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  </div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
                     Try adjusting your search criteria or clearing filters.
-                  </Typography>
-                </TableCell>
-              </TableRow>
+                  </div>
+                </td>
+              </tr>
             ) : (
-              employees.map((emp) => (
-                <TableRow
-                  key={emp.id}
-                  hover
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    cursor: 'pointer',
-                    transition: 'background-color 0.15s ease',
-                  }}
-                  onClick={() => onSelectEmployee(emp.id)}
-                >
-                  {/* Code */}
-                  <TableCell>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontFamily: 'monospace',
-                        fontWeight: 600,
-                        color: 'primary.main',
-                        bgcolor: '#F1F5F9',
-                        px: 1,
-                        py: 0.25,
-                        borderRadius: 1,
-                        display: 'inline-block',
-                      }}
-                    >
-                      {emp.employeeCode}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Employee Info */}
-                  <TableCell>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
+              employees.map((emp) => {
+                const deptStyle = getDepartmentStyle(emp.department);
+                return (
+                  <tr
+                    key={emp.id}
+                    onClick={() => onSelectEmployee(emp.id)}
+                  >
+                    {/* Code */}
+                    <td>
+                      <span
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 600,
+                          color: 'var(--primary)',
+                          backgroundColor: '#F1F5F9',
+                          padding: '3px 8px',
+                          borderRadius: '4px',
                           fontSize: '0.8rem',
-                          bgcolor: '#E2E8F0',
-                          color: '#334155',
-                          fontWeight: 700,
                         }}
                       >
-                        {emp.firstName[0]}
-                        {emp.lastName[0]}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                          {emp.fullName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {emp.email}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </TableCell>
+                        {emp.employeeCode}
+                      </span>
+                    </td>
 
-                  {/* Department */}
-                  <TableCell>
-                    <Chip
-                      label={emp.department}
-                      size="small"
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: '0.75rem',
-                        color: getDepartmentColor(emp.department),
-                        bgcolor: `${getDepartmentColor(emp.department)}12`,
-                        borderRadius: 1,
-                      }}
-                    />
-                  </TableCell>
+                    {/* Employee Info */}
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            backgroundColor: '#E2E8F0',
+                            color: '#334155',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {emp.firstName[0]}
+                          {emp.lastName[0]}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                            {emp.fullName}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {emp.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
 
-                  {/* Job Title */}
-                  <TableCell>
-                    <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                      {emp.jobTitle}
-                    </Typography>
-                  </TableCell>
+                    {/* Department */}
+                    <td>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          border: `1px solid ${deptStyle.borderColor}`,
+                          color: deptStyle.color,
+                          backgroundColor: deptStyle.backgroundColor,
+                        }}
+                      >
+                        {emp.department}
+                      </span>
+                    </td>
 
-                  {/* Country */}
-                  <TableCell>
-                    <Stack direction="row" spacing={0.75} alignItems="center">
-                      <Typography variant="body2">{emp.country}</Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                    {/* Job Title */}
+                    <td>
+                      <span style={{ color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                        {emp.jobTitle}
+                      </span>
+                    </td>
+
+                    {/* Country */}
+                    <td>
+                      <span style={{ fontSize: '0.875rem' }}>{emp.country} </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                         ({emp.countryCode})
-                      </Typography>
-                    </Stack>
-                  </TableCell>
+                      </span>
+                    </td>
 
-                  {/* Status */}
-                  <TableCell>{getStatusChip(emp.status)}</TableCell>
+                    {/* Status */}
+                    <td>{getStatusBadge(emp.status)}</td>
 
-                  {/* Current Compensation (Annual & Monthly) */}
-                  <TableCell align="right">
-                    {emp.currentSalary ? (
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                          {formatCurrency(emp.currentSalary.annualSalary, emp.currentSalary.currency)}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600, display: 'block' }}>
-                          {formatCurrency(Math.round(emp.currentSalary.annualSalary / 12), emp.currentSalary.currency)}/mo
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        —
-                      </Typography>
-                    )}
-                  </TableCell>
+                    {/* Compensation */}
+                    <td style={{ textAlign: 'right' }}>
+                      {emp.currentSalary ? (
+                        <div>
+                          <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                            {formatCurrency(emp.currentSalary.annualSalary, emp.currentSalary.currency)}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>
+                            {formatCurrency(Math.round(emp.currentSalary.annualSalary / 12), emp.currentSalary.currency)}/mo
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
+                    </td>
 
-                  {/* Action */}
-                  <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<VisibilityIcon fontSize="small" />}
-                      onClick={() => onSelectEmployee(emp.id)}
-                      sx={{ fontSize: '0.75rem', py: 0.25, px: 1 }}
-                    >
-                      Dossier
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+                    {/* Action */}
+                    <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => onSelectEmployee(emp.id)}
+                        style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                      >
+                        <Eye size={13} />
+                        <span>Dossier</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 50, 100]}
-        component="div"
-        count={pagination.total}
-        rowsPerPage={pagination.limit}
-        page={Math.max(0, pagination.page - 1)}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        sx={{ borderTop: '1px solid #E2E8F0' }}
-      />
-    </Paper>
+      {/* Pagination Bar */}
+      <div className="pagination-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+          <span>Rows per page:</span>
+          <select
+            className="select"
+            value={pagination.limit}
+            onChange={(e) => {
+              onLimitChange(parseInt(e.target.value, 10));
+              onPageChange(1);
+            }}
+            style={{ padding: '4px 8px', fontSize: '0.875rem' }}
+          >
+            {[10, 25, 50, 100].map((num) => (
+              <option key={num} value={num}>
+                {num}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+            {pagination.total > 0
+              ? `${startRecord}–${endRecord} of ${pagination.total}`
+              : '0 of 0'}
+          </span>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={pagination.page <= 1 || isLoading}
+              onClick={() => onPageChange(pagination.page - 1)}
+              title="Previous Page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={pagination.page >= pagination.totalPages || isLoading}
+              onClick={() => onPageChange(pagination.page + 1)}
+              title="Next Page"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

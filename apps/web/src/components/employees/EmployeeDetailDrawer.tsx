@@ -1,35 +1,23 @@
 import React, { useState } from 'react';
 import {
-  Drawer,
-  Box,
-  Typography,
-  IconButton,
-  Stack,
-  Chip,
-  Divider,
-  Card,
-  CardContent,
-  CircularProgress,
-  Avatar,
-  Paper,
-  Button,
-  Collapse,
-  LinearProgress,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import PaidIcon from '@mui/icons-material/Paid';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import BusinessIcon from '@mui/icons-material/Business';
-import PublicIcon from '@mui/icons-material/Public';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+  X,
+  Coins,
+  Calendar,
+  Building2,
+  Globe,
+  TrendingUp,
+  Receipt,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
-import { formatCurrency, formatDate, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  calculatePercentageChange,
+  getReasonLabel,
+} from '../../utils/formatters';
 import { SalaryAdjustmentModal } from './SalaryAdjustmentModal';
 
 interface EmployeeDetailDrawerProps {
@@ -50,6 +38,8 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
   const [expandedPayouts, setExpandedPayouts] = useState<Record<string, boolean>>({});
 
+  if (!open) return null;
+
   const togglePayoutExpand = (id: string) => {
     setExpandedPayouts((prev) => ({
       ...prev,
@@ -58,378 +48,334 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   };
 
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: '100%', sm: 520 },
-          p: 0,
-          bgcolor: '#F8FAFC',
-        },
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          p: 3,
-          bgcolor: 'primary.main',
-          color: 'common.white',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar
-              sx={{
-                width: 52,
-                height: 52,
-                bgcolor: 'secondary.main',
-                fontSize: '1.2rem',
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div
+          style={{
+            padding: '20px 24px',
+            backgroundColor: 'var(--primary)',
+            color: '#FFFFFF',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--accent)',
+                color: '#FFFFFF',
+                fontSize: '1.1rem',
                 fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               {employee ? `${employee.firstName[0]}${employee.lastName[0]}` : '—'}
-            </Avatar>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.15rem', color: '#FFFFFF', lineHeight: 1.2 }}>
                 {employee ? employee.fullName : 'Employee Dossier'}
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
+              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                 {employee && (
-                  <Chip
-                    label={employee.employeeCode}
-                    size="small"
-                    sx={{
-                      bgcolor: 'rgba(255, 255, 255, 0.15)',
-                      color: 'common.white',
+                  <span
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      color: '#FFFFFF',
                       fontFamily: 'monospace',
                       fontWeight: 600,
-                      height: 22,
+                      fontSize: '0.75rem',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
                     }}
-                  />
+                  >
+                    {employee.employeeCode}
+                  </span>
                 )}
                 {employee && (
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)' }}>
                     Tenure: {employee.tenure.years}y {employee.tenure.months}m
-                  </Typography>
+                  </span>
                 )}
-              </Stack>
-            </Box>
-          </Stack>
+              </div>
+            </div>
+          </div>
 
-          <IconButton
+          <button
+            className="btn-icon"
             onClick={onClose}
-            size="small"
-            sx={{ color: 'rgba(255, 255, 255, 0.8)', '&:hover': { color: 'common.white' } }}
+            style={{ color: 'rgba(255, 255, 255, 0.8)' }}
+            title="Close Dossier"
           >
-            <CloseIcon />
-          </IconButton>
-        </Stack>
-      </Box>
+            <X size={20} />
+          </button>
+        </div>
 
-      {/* Body Content */}
-      <Box sx={{ p: 3 }}>
-        {isLoading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress />
-          </Box>
-        )}
+        {/* Body Content */}
+        <div className="drawer-body">
+          {isLoading && (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+              Loading employee dossier...
+            </div>
+          )}
 
-        {error && (
-          <Card sx={{ p: 3, bgcolor: '#FEF2F2', border: '1px solid #FCA5A5' }}>
-            <Typography variant="body2" color="error">
-              Unable to load employee details. Please try again.
-            </Typography>
-          </Card>
-        )}
+          {error && (
+            <div className="alert alert-error">
+              <span>Unable to load employee details. Please try again.</span>
+            </div>
+          )}
 
-        {employee && (
-          <Stack spacing={3}>
-            {/* Card 1: Current Active Compensation */}
-            <Card sx={{ border: '2px solid #2563EB', bgcolor: '#FFFFFF', boxShadow: '0 4px 6px -1px rgb(37 99 235 / 0.1)' }}>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <PaidIcon color="secondary" fontSize="small" />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase' }}>
+          {employee && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Card 1: Current Active Compensation */}
+              <div
+                className="card"
+                style={{
+                  border: '2px solid var(--accent)',
+                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.1)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Coins size={16} color="var(--accent)" />
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: 'var(--text-muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
                       Current Base Compensation
-                    </Typography>
-                  </Stack>
-                  <Chip
-                    label={employee.currentSalary ? employee.currentSalary.currency : '—'}
-                    size="small"
-                    color="secondary"
-                    sx={{ fontWeight: 700, height: 22 }}
-                  />
-                </Stack>
+                    </span>
+                  </div>
+                  <span
+                    className="badge"
+                    style={{
+                      backgroundColor: 'var(--accent-light)',
+                      color: 'var(--accent)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {employee.currentSalary ? employee.currentSalary.currency : '—'}
+                  </span>
+                </div>
 
-                <Box sx={{ mt: 1.5, mb: 1 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+                <div style={{ marginTop: '12px', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em' }}>
                     {employee.currentSalary
                       ? formatCurrency(employee.currentSalary.annualSalary, employee.currentSalary.currency)
                       : 'Not Set'}
-                  </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Per Annum
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.disabled' }}>
-                      •
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Per Annum</span>
+                    <span style={{ color: 'var(--border)' }}>•</span>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--accent)' }}>
                       {employee.currentSalary
-                        ? `${formatCurrency(employee.currentSalary.monthlySalary || Math.round(employee.currentSalary.annualSalary / 12), employee.currentSalary.currency)} / month`
+                        ? `${formatCurrency(
+                            employee.currentSalary.monthlySalary ||
+                              Math.round(employee.currentSalary.annualSalary / 12),
+                            employee.currentSalary.currency
+                          )} / month`
                         : '—'}
-                    </Typography>
-                  </Stack>
-                </Box>
+                    </span>
+                  </div>
+                </div>
 
-                <Divider sx={{ my: 1.5 }} />
+                <div style={{ height: '1px', backgroundColor: 'var(--border)', margin: '14px 0' }} />
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="caption" color="text.secondary">
-                    Effective Since:
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '6px' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Effective Since:</span>
+                  <span style={{ fontWeight: 600 }}>
                     {employee.currentSalary ? formatDate(employee.currentSalary.effectiveFrom) : '—'}
-                  </Typography>
-                </Stack>
+                  </span>
+                </div>
 
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Adjustment Reason:
-                  </Typography>
-                  <Chip
-                    label={employee.currentSalary ? getReasonLabel(employee.currentSalary.reason) : '—'}
-                    size="small"
-                    sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600, bgcolor: '#F1F5F9' }}
-                  />
-                </Stack>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '16px' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Adjustment Reason:</span>
+                  <span
+                    style={{
+                      padding: '2px 8px',
+                      backgroundColor: '#F1F5F9',
+                      borderRadius: '4px',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    {employee.currentSalary ? getReasonLabel(employee.currentSalary.reason) : '—'}
+                  </span>
+                </div>
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  fullWidth
-                  startIcon={<TrendingUpIcon />}
+                <button
+                  type="button"
+                  className="btn btn-primary"
                   onClick={() => setAdjustmentModalOpen(true)}
-                  sx={{ mt: 2, fontWeight: 600 }}
+                  style={{ width: '100%' }}
                 >
-                  Adjust Compensation
-                </Button>
-              </CardContent>
-            </Card>
+                  <TrendingUp size={16} />
+                  <span>Adjust Compensation</span>
+                </button>
+              </div>
 
-            {/* Card 2: Employment Profile & Demographics */}
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
-                  Employment Details
-                </Typography>
+              {/* Card 2: Employment Profile & Demographics */}
+              <div className="card">
+                <h4 style={{ fontSize: '0.95rem', marginBottom: '14px' }}>Employment Details</h4>
 
-                <Stack spacing={1.5}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <BusinessIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        Department:
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {employee.department}
-                    </Typography>
-                  </Stack>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.875rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
+                      <Building2 size={16} />
+                      <span>Department:</span>
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{employee.department}</span>
+                  </div>
 
-                  <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <WorkspacePremiumIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        Job Title:
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {employee.jobTitle}
-                    </Typography>
-                  </Stack>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
+                      <span>💼</span>
+                      <span>Job Title:</span>
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{employee.jobTitle}</span>
+                  </div>
 
-                  <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <PublicIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        Country:
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
+                      <Globe size={16} />
+                      <span>Country:</span>
+                    </div>
+                    <span style={{ fontWeight: 600 }}>
                       {employee.country} ({employee.countryCode})
-                    </Typography>
-                  </Stack>
+                    </span>
+                  </div>
 
-                  <Stack direction="row" justifyContent="space-between">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <CalendarMonthIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        Hire Date:
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {formatDate(employee.hireDate)}
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)' }}>
+                      <Calendar size={16} />
+                      <span>Hire Date:</span>
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{formatDate(employee.hireDate)}</span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Card 2.5: Annual Paid Leave Quotas & Attendance History */}
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <EventAvailableIcon color="primary" fontSize="small" />
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                      Leave Entitlement & Quotas
-                    </Typography>
-                  </Stack>
-                  <Chip
-                    label={`${employee.leaveBalances?.totalRemaining ?? 37} Days Available`}
-                    size="small"
-                    color="primary"
-                    sx={{ fontWeight: 700, height: 22, fontSize: '0.7rem' }}
-                  />
-                </Stack>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              {/* Card 2.5: Annual Paid Leave Quotas & Attendance History */}
+              <div className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <h4 style={{ fontSize: '0.95rem' }}>Leave Entitlement & Quotas</h4>
+                  <span
+                    className="badge"
+                    style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)' }}
+                  >
+                    {employee.leaveBalances?.totalRemaining ?? 37} Days Available
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
                   Annual paid leave quotas. Leaves exceeding available balance automatically incur Loss of Pay (unpaid) salary cuts.
-                </Typography>
+                </div>
 
-                {/* Quota Progress Cards */}
-                <Stack spacing={1.5}>
+                {/* Quota Progress */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {/* Sick Leave */}
-                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                        🤒 Sick Leave
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#2563EB' }}>
+                  <div
+                    style={{
+                      padding: '12px',
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                      <span>🤒 Sick Leave</span>
+                      <span style={{ color: 'var(--accent)' }}>
                         {employee.leaveBalances?.sick.balance ?? 10} / {employee.leaveBalances?.sick.quota ?? 10} Days Left
-                      </Typography>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={((employee.leaveBalances?.sick.balance ?? 10) / (employee.leaveBalances?.sick.quota ?? 10)) * 100}
-                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0' }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
-                      Used: {employee.leaveBalances?.sick.used ?? 0} days (100% paid)
-                    </Typography>
-                  </Paper>
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          backgroundColor: 'var(--accent)',
+                          width: `${((employee.leaveBalances?.sick.balance ?? 10) / (employee.leaveBalances?.sick.quota ?? 10)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
 
                   {/* Casual Leave */}
-                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                        🏖️ Casual / Personal Leave
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669' }}>
+                  <div
+                    style={{
+                      padding: '12px',
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                      <span>🏖️ Casual / Personal Leave</span>
+                      <span style={{ color: 'var(--success)' }}>
                         {employee.leaveBalances?.casual.balance ?? 12} / {employee.leaveBalances?.casual.quota ?? 12} Days Left
-                      </Typography>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      color="success"
-                      value={((employee.leaveBalances?.casual.balance ?? 12) / (employee.leaveBalances?.casual.quota ?? 12)) * 100}
-                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0' }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
-                      Used: {employee.leaveBalances?.casual.used ?? 0} days (100% paid)
-                    </Typography>
-                  </Paper>
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          backgroundColor: 'var(--success)',
+                          width: `${((employee.leaveBalances?.casual.balance ?? 12) / (employee.leaveBalances?.casual.quota ?? 12)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
 
                   {/* Annual Leave */}
-                  <Paper elevation={0} sx={{ p: 1.5, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 2 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                        ✈️ Annual Vacation
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#7C3AED' }}>
+                  <div
+                    style={{
+                      padding: '12px',
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.8rem', fontWeight: 700 }}>
+                      <span>✈️ Annual Vacation</span>
+                      <span style={{ color: '#7C3AED' }}>
                         {employee.leaveBalances?.annual.balance ?? 15} / {employee.leaveBalances?.annual.quota ?? 15} Days Left
-                      </Typography>
-                    </Stack>
-                    <LinearProgress
-                      variant="determinate"
-                      value={((employee.leaveBalances?.annual.balance ?? 15) / (employee.leaveBalances?.annual.quota ?? 15)) * 100}
-                      sx={{ height: 6, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#7C3AED' } }}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5, fontSize: '0.68rem' }}>
-                      Used: {employee.leaveBalances?.annual.used ?? 0} days (100% paid)
-                    </Typography>
-                  </Paper>
-                </Stack>
+                      </span>
+                    </div>
+                    <div style={{ height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          backgroundColor: '#7C3AED',
+                          width: `${((employee.leaveBalances?.annual.balance ?? 15) / (employee.leaveBalances?.annual.quota ?? 15)) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                {/* Recent Leave History Log */}
-                {employee.leaveHistory && employee.leaveHistory.length > 0 && (
-                  <Box sx={{ mt: 2.5 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1 }}>
-                      Recent Attendance & Leave History
-                    </Typography>
-                    <Stack spacing={1}>
-                      {employee.leaveHistory.map((lh) => (
-                        <Paper
-                          key={lh.id}
-                          elevation={0}
-                          sx={{
-                            p: 1.25,
-                            bgcolor: '#FFFFFF',
-                            border: '1px solid #E2E8F0',
-                            borderRadius: 1.5,
-                            borderLeft: lh.isPaid ? '3px solid #10B981' : '3px solid #EF4444',
-                          }}
-                        >
-                          <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.8rem' }}>
-                                {lh.leaveType} LEAVE
-                              </Typography>
-                              <Chip
-                                label={lh.isPaid ? 'PAID PTO' : 'UNPAID (LOP)'}
-                                size="small"
-                                sx={{
-                                  height: 18,
-                                  fontSize: '0.65rem',
-                                  fontWeight: 700,
-                                  bgcolor: lh.isPaid ? '#ECFDF5' : '#FEF2F2',
-                                  color: lh.isPaid ? '#047857' : '#B91C1C',
-                                }}
-                              />
-                            </Stack>
-                            <Typography variant="caption" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                              {lh.daysCount} Day{lh.daysCount > 1 ? 's' : ''}
-                            </Typography>
-                          </Stack>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
-                            {formatDate(lh.startDate)} – {formatDate(lh.endDate)} • {lh.reason || 'Approved leave'}
-                          </Typography>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
+              {/* Card 3: Salary Progression Timeline */}
+              <div className="card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <TrendingUp size={16} color="var(--accent)" />
+                  <h4 style={{ fontSize: '0.95rem' }}>
+                    Compensation Timeline ({employee.salaryHistory.length} Record
+                    {employee.salaryHistory.length === 1 ? '' : 's'})
+                  </h4>
+                </div>
 
-            {/* Card 3: Salary Progression Timeline */}
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                  <TrendingUpIcon color="secondary" fontSize="small" />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    Compensation Timeline ({employee.salaryHistory.length} Record{employee.salaryHistory.length === 1 ? '' : 's'})
-                  </Typography>
-                </Stack>
-
-                <Stack spacing={2}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {employee.salaryHistory.map((item, index) => {
                     const nextItem = employee.salaryHistory[index + 1];
                     const percentChange = nextItem
@@ -438,74 +384,80 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                     const isActive = item.effectiveTo === null;
 
                     return (
-                      <Paper
+                      <div
                         key={item.id}
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          bgcolor: isActive ? '#F8FAFC' : '#FFFFFF',
-                          border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                          borderRadius: 2,
+                        style={{
+                          padding: '14px',
+                          backgroundColor: isActive ? '#F8FAFC' : '#FFFFFF',
+                          border: isActive ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          borderRadius: 'var(--radius-md)',
                         }}
                       >
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Typography variant="body1" sx={{ fontWeight: 700, color: '#0F172A' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--primary)' }}>
                               {formatCurrency(item.annualSalary, item.currency)}
-                            </Typography>
+                            </span>
                             {percentChange && (
-                              <Chip
-                                label={percentChange}
-                                size="small"
-                                sx={{
-                                  bgcolor: '#ECFDF5',
-                                  color: '#065F46',
-                                  fontWeight: 700,
+                              <span
+                                style={{
+                                  padding: '2px 6px',
+                                  borderRadius: '9999px',
                                   fontSize: '0.7rem',
-                                  height: 20,
+                                  fontWeight: 700,
+                                  backgroundColor: 'var(--success-bg)',
+                                  color: 'var(--success-text)',
                                 }}
-                              />
+                              >
+                                {percentChange}
+                              </span>
                             )}
-                          </Stack>
-                          <Chip
-                            label={isActive ? 'Active' : 'Prior'}
-                            size="small"
-                            variant={isActive ? 'filled' : 'outlined'}
-                            color={isActive ? 'primary' : 'default'}
-                            sx={{ height: 20, fontSize: '0.7rem', fontWeight: 600 }}
-                          />
-                        </Stack>
+                          </div>
+                          <span
+                            className="badge"
+                            style={{
+                              backgroundColor: isActive ? 'var(--primary)' : '#F1F5F9',
+                              color: isActive ? '#FFFFFF' : 'var(--text-muted)',
+                            }}
+                          >
+                            {isActive ? 'Active' : 'Prior'}
+                          </span>
+                        </div>
 
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-                          <Typography variant="caption" color="text.secondary">
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginTop: '8px',
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          <span style={{ color: 'var(--text-muted)' }}>
                             {formatDate(item.effectiveFrom)} – {formatDate(item.effectiveTo)}
-                          </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 600, color: '#475569' }}>
+                          </span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                             {getReasonLabel(item.reason)}
-                          </Typography>
-                        </Stack>
-                      </Paper>
+                          </span>
+                        </div>
+                      </div>
                     );
                   })}
-                </Stack>
-              </CardContent>
-            </Card>
+                </div>
+              </div>
 
-            {/* Card 4: Monthly Salary Disbursement Ledger (Previous Months Paid) */}
-            <Card>
-              <CardContent sx={{ p: 2.5 }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                  <ReceiptLongIcon color="primary" fontSize="small" />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    Monthly Pay Ledger (Previous Disbursements)
-                  </Typography>
-                </Stack>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+              {/* Card 4: Monthly Salary Disbursement Ledger */}
+              <div className="card">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <Receipt size={16} color="var(--primary)" />
+                  <h4 style={{ fontSize: '0.95rem' }}>Monthly Pay Ledger</h4>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
                   Historical record of monthly salary payouts disbursed to this employee.
-                </Typography>
+                </div>
 
                 {employee.monthlyPayouts && employee.monthlyPayouts.length > 0 ? (
-                  <Stack spacing={1.5}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {employee.monthlyPayouts.map((payout) => {
                       const isExpanded = !!expandedPayouts[payout.id];
                       const gross = payout.grossSalary || payout.amount;
@@ -513,182 +465,170 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                       const leave = payout.leaveDeduction || 0;
                       const other = payout.otherDeductions || 0;
                       const net = payout.netSalary !== undefined ? payout.netSalary : payout.amount;
-                      const taxRatePct = gross > 0 ? ((tax / gross) * 100).toFixed(1).replace('.0', '') : '20';
-                      const otherRatePct = gross > 0 ? ((other / gross) * 100).toFixed(1).replace('.0', '') : '5';
+                      const taxRatePct =
+                        gross > 0 ? ((tax / gross) * 100).toFixed(1).replace('.0', '') : '20';
+                      const otherRatePct =
+                        gross > 0 ? ((other / gross) * 100).toFixed(1).replace('.0', '') : '5';
 
                       return (
-                        <Paper
+                        <div
                           key={payout.id}
-                          elevation={0}
-                          sx={{
-                            p: 2,
-                            bgcolor: '#FFFFFF',
-                            border: isExpanded ? '1.5px solid #2563EB' : '1px solid #E2E8F0',
-                            borderRadius: 2,
-                            transition: 'all 0.2s ease',
-                            '&:hover': { borderColor: '#93C5FA', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' },
+                          style={{
+                            padding: '14px',
+                            backgroundColor: '#FFFFFF',
+                            border: isExpanded ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                            borderRadius: 'var(--radius-md)',
+                            transition: 'all 0.15s ease',
                           }}
                         >
-                          {/* Header: Gross vs. Net Pay Overview */}
-                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 800, color: '#0F172A' }}>
-                                {payout.month}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <div style={{ fontWeight: 800, fontSize: '0.875rem' }}>{payout.month}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                 Pay Date: {formatDate(payout.payoutDate)}
-                              </Typography>
-                              <Typography variant="caption" sx={{ display: 'block', color: '#64748B', mt: 0.25 }}>
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
                                 Basis: {getReasonLabel(payout.reason as any)}
-                              </Typography>
-                            </Box>
+                              </div>
+                            </div>
 
-                            <Stack alignItems="flex-end" spacing={0.5}>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <Box sx={{ textAlign: 'right' }}>
-                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.68rem' }}>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                                <div>
+                                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                                     Gross: {formatCurrency(gross, payout.currency)}
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 800, color: '#16A34A' }}>
+                                  </div>
+                                  <div style={{ fontWeight: 800, fontSize: '0.875rem', color: '#16A34A' }}>
                                     Net: {formatCurrency(net, payout.currency)}
-                                  </Typography>
-                                </Box>
-                                <Chip
-                                  icon={<CheckCircleOutlineIcon style={{ fontSize: 13 }} />}
-                                  label={payout.status}
-                                  size="small"
-                                  sx={{
-                                    height: 20,
-                                    fontSize: '0.65rem',
-                                    fontWeight: 700,
-                                    bgcolor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
+                                  </div>
+                                </div>
+                                <span
+                                  className="badge"
+                                  style={{
+                                    backgroundColor: payout.status === 'PAID' ? '#DCFCE7' : '#EFF6FF',
                                     color: payout.status === 'PAID' ? '#15803D' : '#2563EB',
+                                    gap: '4px',
                                   }}
-                                />
-                              </Stack>
+                                >
+                                  <CheckCircle2 size={12} />
+                                  <span>{payout.status}</span>
+                                </span>
+                              </div>
 
-                              <Button
-                                size="small"
+                              <button
+                                type="button"
                                 onClick={() => togglePayoutExpand(payout.id)}
-                                endIcon={isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                                sx={{
-                                  fontSize: '0.72rem',
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: 'var(--accent)',
+                                  fontSize: '0.75rem',
                                   fontWeight: 600,
-                                  textTransform: 'none',
-                                  p: 0,
-                                  minWidth: 'auto',
-                                  color: '#2563EB',
+                                  cursor: 'pointer',
+                                  marginTop: '6px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '2px',
                                 }}
                               >
-                                {isExpanded ? 'Hide Payslip' : 'View Payslip'}
-                              </Button>
-                            </Stack>
-                          </Stack>
+                                <span>{isExpanded ? 'Hide Payslip' : 'View Payslip'}</span>
+                                {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                              </button>
+                            </div>
+                          </div>
 
-                          {/* Expandable Payslip Breakdown */}
-                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box
-                              sx={{
-                                mt: 2,
-                                p: 2,
-                                bgcolor: '#F8FAFC',
-                                borderRadius: 2,
-                                border: '1px solid #E2E8F0',
+                          {/* Itemized Voucher */}
+                          {isExpanded && (
+                            <div
+                              style={{
+                                marginTop: '14px',
+                                padding: '14px',
+                                backgroundColor: '#F8FAFC',
+                                borderRadius: 'var(--radius-md)',
+                                border: '1px solid var(--border)',
+                                fontSize: '0.8rem',
                               }}
                             >
-                              <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', display: 'block', mb: 1.5, letterSpacing: '0.05em' }}>
+                              <div
+                                style={{
+                                  fontWeight: 700,
+                                  color: 'var(--text-muted)',
+                                  textTransform: 'uppercase',
+                                  fontSize: '0.7rem',
+                                  letterSpacing: '0.05em',
+                                  marginBottom: '10px',
+                                }}
+                              >
                                 Itemized Payslip & Deduction Voucher
-                              </Typography>
+                              </div>
 
-                              <Stack spacing={1}>
-                                {/* Gross Salary */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>
-                                    🟢 Gross Salary:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-                                    {formatCurrency(gross, payout.currency)}
-                                  </Typography>
-                                </Stack>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                  <span style={{ fontWeight: 600 }}>🟢 Gross Salary:</span>
+                                  <span style={{ fontWeight: 700 }}>{formatCurrency(gross, payout.currency)}</span>
+                                </div>
 
-                                {/* Income Tax Withholding */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
-                                    🔴 Income Tax Withholding:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--danger)' }}>
+                                  <span>🔴 Income Tax Withholding:</span>
+                                  <span style={{ fontWeight: 600 }}>
                                     - {formatCurrency(tax, payout.currency)} ({taxRatePct}%)
-                                  </Typography>
-                                </Stack>
+                                  </span>
+                                </div>
 
-                                {/* Paid Leave (PTO) */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body2" sx={{ color: '#059669' }}>
-                                    🟢 Paid Leaves (Covered by PTO):
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#059669' }}>
-                                    {payout.paidLeaveDays || 0} Day{(payout.paidLeaveDays || 0) === 1 ? '' : 's'} Covered ($0.00 deduction)
-                                  </Typography>
-                                </Stack>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#059669' }}>
+                                  <span>🟢 Paid Leaves (Covered by PTO):</span>
+                                  <span style={{ fontWeight: 600 }}>
+                                    {payout.paidLeaveDays || 0} Day{(payout.paidLeaveDays || 0) === 1 ? '' : 's'} Covered
+                                  </span>
+                                </div>
 
-                                {/* Unpaid Leave (Loss of Pay) */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
-                                    🔴 Unpaid Leave (Loss of Pay):
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: leave > 0 ? '#DC2626' : '#64748B' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--danger)' }}>
+                                  <span>🔴 Unpaid Leave (Loss of Pay):</span>
+                                  <span style={{ fontWeight: 600 }}>
                                     {leave > 0
-                                      ? `- ${formatCurrency(leave, payout.currency)} (${payout.unpaidLeaveDays || 2} days @ ${formatCurrency(Math.round(gross / 22), payout.currency)}/day)`
+                                      ? `- ${formatCurrency(leave, payout.currency)} (${payout.unpaidLeaveDays || 2} days)`
                                       : `- ${formatCurrency(0, payout.currency)} (0 days)`}
-                                  </Typography>
-                                </Stack>
+                                  </span>
+                                </div>
 
-                                {/* Benefits & Retirement */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body2" sx={{ color: '#DC2626' }}>
-                                    🔴 Benefits & Retirement:
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 600, color: '#DC2626' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--danger)' }}>
+                                  <span>🔴 Benefits & Retirement:</span>
+                                  <span style={{ fontWeight: 600 }}>
                                     - {formatCurrency(other, payout.currency)} ({otherRatePct}%)
-                                  </Typography>
-                                </Stack>
+                                  </span>
+                                </div>
 
-                                <Divider sx={{ my: 1, borderColor: '#CBD5E1' }} />
+                                <div style={{ height: '1px', backgroundColor: '#CBD5E1', margin: '6px 0' }} />
 
-                                {/* Net Disbursed Take-Home */}
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                  <Typography variant="body1" sx={{ fontWeight: 800, color: '#1D4ED8' }}>
-                                    🔵 Net Disbursed Take-Home:
-                                  </Typography>
-                                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#1D4ED8' }}>
-                                    {formatCurrency(net, payout.currency)}
-                                  </Typography>
-                                </Stack>
-                              </Stack>
-
-                              {payout.notes && (
-                                <Box sx={{ mt: 1.5, pt: 1, borderTop: '1px dashed #E2E8F0' }}>
-                                  <Typography variant="caption" sx={{ color: '#64748B', fontStyle: 'italic', display: 'block' }}>
-                                    Remittance Reference: {payout.notes}
-                                  </Typography>
-                                </Box>
-                              )}
-                            </Box>
-                          </Collapse>
-                        </Paper>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 800,
+                                    color: 'var(--accent)',
+                                  }}
+                                >
+                                  <span>🔵 Net Disbursed Take-Home:</span>
+                                  <span>{formatCurrency(net, payout.currency)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       );
                     })}
-                  </Stack>
+                  </div>
                 ) : (
-                  <Typography variant="caption" color="text.secondary">
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     No historical monthly disbursements on record.
-                  </Typography>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          </Stack>
-        )}
-      </Box>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Salary Adjustment Dialog */}
       <SalaryAdjustmentModal
@@ -696,6 +636,6 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
         onClose={() => setAdjustmentModalOpen(false)}
         employee={employee || null}
       />
-    </Drawer>
+    </div>
   );
 };

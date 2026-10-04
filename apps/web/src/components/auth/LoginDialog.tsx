@@ -1,18 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Stack,
-  Typography,
-  Alert,
-  CircularProgress,
-  Box,
-} from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { Lock, X } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useLoginMutation } from '../../features/api/apiSlice';
 import { setCredentials } from '../../features/auth/authSlice';
@@ -29,6 +16,8 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   const [email, setEmail] = useState('hr@acme.com');
   const [password, setPassword] = useState('Admin#Pass2026!');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,101 +41,120 @@ export const LoginDialog: React.FC<LoginDialogProps> = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <form onSubmit={handleSubmit}>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Box
-              sx={{
-                bgcolor: 'primary.main',
-                color: 'common.white',
-                p: 1,
-                borderRadius: 1.5,
-                display: 'flex',
-              }}
-            >
-              <LockOutlinedIcon fontSize="small" />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                HR Portal Access
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Secure internal employee compensation system
-              </Typography>
-            </Box>
-          </Stack>
-        </DialogTitle>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSubmit}>
+          {/* Header */}
+          <div className="modal-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: '#FFFFFF',
+                  padding: '8px',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                }}
+              >
+                <Lock size={18} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.1rem' }}>HR Portal Access</h3>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Secure internal employee compensation system
+                </div>
+              </div>
+            </div>
 
-        <DialogContent dividers sx={{ py: 3 }}>
-          <Stack spacing={2.5}>
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="modal-body">
             {errorMessage && (
-              <Alert severity="error" onClose={() => setErrorMessage(null)}>
-                {errorMessage}
-              </Alert>
+              <div className="alert alert-error">
+                <span>{errorMessage}</span>
+              </div>
             )}
 
-            <TextField
-              label="Work Email"
-              type="email"
-              fullWidth
-              required
-              size="small"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
+            <div className="form-group">
+              <label className="form-label">Work Email</label>
+              <input
+                type="email"
+                required
+                className="input-text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                style={{ width: '100%' }}
+              />
+            </div>
 
-            <TextField
-              label="Password"
-              type="password"
-              fullWidth
-              required
-              size="small"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                required
+                className="input-text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                style={{ width: '100%' }}
+              />
+            </div>
 
-            <Box
-              sx={{
-                p: 1.5,
-                bgcolor: 'background.default',
-                borderRadius: 1.5,
+            {/* Quick Demo Credentials */}
+            <div
+              style={{
+                padding: '12px',
+                backgroundColor: '#F8FAFC',
+                borderRadius: 'var(--radius-md)',
                 border: '1px dashed #CBD5E1',
+                textAlign: 'center',
+                marginTop: '16px',
               }}
             >
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
                 Quick Demo Credentials:
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                fullWidth
+              </div>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
                 onClick={handleFillDemo}
-                sx={{ textTransform: 'none', fontSize: '0.8rem' }}
+                style={{ width: '100%' }}
               >
                 Use hr@acme.com
-              </Button>
-            </Box>
-          </Stack>
-        </DialogContent>
+              </button>
+            </div>
+          </div>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={onClose} disabled={isLoading} color="inherit">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : null}
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+          {/* Footer */}
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };

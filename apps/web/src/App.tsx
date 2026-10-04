@@ -1,28 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Box,
-  Stack,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  Alert,
-  Tabs,
-  Tab,
-} from '@mui/material';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import PublicIcon from '@mui/icons-material/Public';
-import DomainIcon from '@mui/icons-material/Domain';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { useSelector } from 'react-redux';
-import { RootState } from './app/store';
 import {
-  useGetEmployeesQuery,
-  useGetFacetsQuery,
-} from './features/api/apiSlice';
+  Users,
+  Globe,
+  Building2,
+  Coins,
+  List,
+  BarChart3,
+} from 'lucide-react';
+import { RootState } from './app/store';
+import { useGetEmployeesQuery, useGetFacetsQuery } from './features/api/apiSlice';
 import { EmployeeFilterParams } from './types';
 import { Navbar } from './components/layout/Navbar';
 import { FilterBar } from './components/employees/FilterBar';
@@ -85,216 +72,220 @@ export const App: React.FC = () => {
 
   // Authenticated Executive Portal
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <div className="app-container">
       {/* Executive Navbar */}
-      <Navbar
-        onOpenLogin={() => {}}
-        totalEmployees={employeesData?.pagination.total}
-      />
+      <Navbar totalEmployees={employeesData?.pagination.total} />
 
-      <Container maxWidth="xl" sx={{ py: 4, px: { xs: 2, sm: 3, md: 4 } }}>
-        <Stack spacing={3}>
-          {/* Header Row: Title & Navigation View Switcher */}
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ md: 'center' }}
-            spacing={2}
+      <main className="main-content">
+        {/* Header Row: Title & Navigation View Switcher */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            marginBottom: '24px',
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: '1.6rem', marginBottom: '4px' }}>
+              {activeTab === 'directory'
+                ? 'Workforce Compensation Directory'
+                : 'Executive Compensation Analytics'}
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              {activeTab === 'directory'
+                ? 'Centralized HR compensation management across global jurisdictions.'
+                : 'Real-time organization-wide pay parity, departmental budgets, and growth metrics.'}
+            </p>
+          </div>
+
+          {/* View Switcher Tabs */}
+          <div
+            style={{
+              backgroundColor: '#E2E8F0',
+              borderRadius: 'var(--radius-md)',
+              padding: '4px',
+              display: 'flex',
+              gap: '4px',
+            }}
           >
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
-                {activeTab === 'directory' ? 'Workforce Compensation Directory' : 'Executive Compensation Analytics'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {activeTab === 'directory'
-                  ? 'Centralized HR compensation management across global jurisdictions.'
-                  : 'Real-time organization-wide pay parity, departmental budgets, and growth metrics.'}
-              </Typography>
-            </Box>
-
-            {/* View Switcher Tabs */}
-            <Tabs
-              value={activeTab}
-              onChange={(_, newVal) => setActiveTab(newVal)}
-              sx={{
-                bgcolor: '#E2E8F0',
-                borderRadius: 2,
-                p: 0.5,
-                minHeight: 'auto',
-                '& .MuiTabs-indicator': { display: 'none' },
+            <button
+              type="button"
+              className="tab-btn"
+              onClick={() => setActiveTab('directory')}
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                borderBottom: 'none',
+                margin: 0,
+                padding: '6px 16px',
+                backgroundColor: activeTab === 'directory' ? '#FFFFFF' : 'transparent',
+                color: activeTab === 'directory' ? 'var(--primary)' : 'var(--text-muted)',
+                boxShadow: activeTab === 'directory' ? 'var(--shadow-sm)' : 'none',
               }}
             >
-              <Tab
-                value="directory"
-                label="Directory"
-                icon={<FormatListBulletedIcon fontSize="small" />}
-                iconPosition="start"
-                sx={{
-                  borderRadius: 1.5,
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  minHeight: 36,
-                  py: 0.5,
-                  px: 2,
-                  textTransform: 'none',
-                  '&.Mui-selected': {
-                    bgcolor: '#FFFFFF',
-                    color: 'primary.main',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                  },
-                }}
-              />
-              <Tab
-                value="analytics"
-                label="Analytics & KPIs"
-                icon={<BarChartIcon fontSize="small" />}
-                iconPosition="start"
-                sx={{
-                  borderRadius: 1.5,
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  minHeight: 36,
-                  py: 0.5,
-                  px: 2,
-                  textTransform: 'none',
-                  '&.Mui-selected': {
-                    bgcolor: '#FFFFFF',
-                    color: 'primary.main',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                  },
-                }}
-              />
-            </Tabs>
-          </Stack>
+              <List size={16} />
+              <span>Directory</span>
+            </button>
 
-          {/* Conditional View Rendering */}
-          {activeTab === 'analytics' ? (
-            <AnalyticsDashboard />
-          ) : (
-            <>
-              {/* Quick Metrics Bar */}
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={3}>
-                  <Card>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex' }}>
-                          <PeopleAltIcon fontSize="small" />
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                            Total Headcount
-                          </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-                            {employeesData ? employeesData.pagination.total.toLocaleString() : '10,000'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
+            <button
+              type="button"
+              className="tab-btn"
+              onClick={() => setActiveTab('analytics')}
+              style={{
+                borderRadius: 'var(--radius-sm)',
+                borderBottom: 'none',
+                margin: 0,
+                padding: '6px 16px',
+                backgroundColor: activeTab === 'analytics' ? '#FFFFFF' : 'transparent',
+                color: activeTab === 'analytics' ? 'var(--primary)' : 'var(--text-muted)',
+                boxShadow: activeTab === 'analytics' ? 'var(--shadow-sm)' : 'none',
+              }}
+            >
+              <BarChart3 size={16} />
+              <span>Analytics & KPIs</span>
+            </button>
+          </div>
+        </div>
 
-                <Grid item xs={6} sm={3}>
-                  <Card>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#F0FDF4', color: '#16A34A', display: 'flex' }}>
-                          <PublicIcon fontSize="small" />
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                            Global Regions
-                          </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-                            {facets ? facets.countries.length : 7} Countries
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
+        {/* Conditional View Rendering */}
+        {activeTab === 'analytics' ? (
+          <AnalyticsDashboard />
+        ) : (
+          <>
+            {/* Quick Metrics Bar */}
+            <div className="grid-cols-4">
+              <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+                <div
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: '#EFF6FF',
+                    color: '#2563EB',
+                    display: 'flex',
+                  }}
+                >
+                  <Users size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    Total Headcount
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {employeesData ? employeesData.pagination.total.toLocaleString() : '10,000'}
+                  </div>
+                </div>
+              </div>
 
-                <Grid item xs={6} sm={3}>
-                  <Card>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#FAF5FF', color: '#9333EA', display: 'flex' }}>
-                          <DomainIcon fontSize="small" />
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                            Departments
-                          </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-                            {facets ? facets.departments.length : 8} Divisions
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
+              <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+                <div
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: '#F0FDF4',
+                    color: '#16A34A',
+                    display: 'flex',
+                  }}
+                >
+                  <Globe size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    Global Regions
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {facets ? facets.countries.length : 7} Countries
+                  </div>
+                </div>
+              </div>
 
-                <Grid item xs={6} sm={3}>
-                  <Card>
-                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: '#FFFBEB', color: '#D97706', display: 'flex' }}>
-                          <AccountBalanceWalletIcon fontSize="small" />
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-                            Currencies
-                          </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.1 }}>
-                            {facets ? facets.currencies.length : 7} Currencies
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              </Grid>
+              <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+                <div
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: '#FAF5FF',
+                    color: '#9333EA',
+                    display: 'flex',
+                  }}
+                >
+                  <Building2 size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    Departments
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {facets ? facets.departments.length : 8} Divisions
+                  </div>
+                </div>
+              </div>
 
-              {employeesError && (
-                <Alert severity="error">
+              <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px' }}>
+                <div
+                  style={{
+                    padding: '10px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: '#FFFBEB',
+                    color: '#D97706',
+                    display: 'flex',
+                  }}
+                >
+                  <Coins size={20} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
+                    Currencies
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    {facets ? facets.currencies.length : 7} Currencies
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {employeesError && (
+              <div className="alert alert-error">
+                <span>
                   Unable to load employee compensation records. Please verify connection to the backend.
-                </Alert>
-              )}
+                </span>
+              </div>
+            )}
 
-              {/* Filter Bar */}
-              <FilterBar
-                facets={facets}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onReset={handleResetFilters}
-                totalResults={employeesData?.pagination.total}
-              />
+            {/* Filter Bar */}
+            <FilterBar
+              facets={facets}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onReset={handleResetFilters}
+              totalResults={employeesData?.pagination.total}
+            />
 
-              {/* Employee Directory Table */}
-              <EmployeeTable
-                employees={employeesData?.employees || []}
-                pagination={
-                  employeesData?.pagination || {
-                    total: 0,
-                    page: 1,
-                    limit: 25,
-                    totalPages: 0,
-                    hasNext: false,
-                    hasPrev: false,
-                  }
+            {/* Employee Directory Table */}
+            <EmployeeTable
+              employees={employeesData?.employees || []}
+              pagination={
+                employeesData?.pagination || {
+                  total: 0,
+                  page: 1,
+                  limit: 25,
+                  totalPages: 0,
+                  hasNext: false,
+                  hasPrev: false,
                 }
-                isLoading={isEmployeesLoading}
-                onPageChange={(page) => handleFilterChange({ page })}
-                onLimitChange={(limit) => handleFilterChange({ limit, page: 1 })}
-                onSortChange={handleSortChange}
-                sortBy={filters.sortBy || 'employeeCode'}
-                sortOrder={filters.sortOrder || 'asc'}
-                onSelectEmployee={(id) => setSelectedEmployeeId(id)}
-              />
-            </>
-          )}
-        </Stack>
-      </Container>
+              }
+              isLoading={isEmployeesLoading}
+              onPageChange={(page) => handleFilterChange({ page })}
+              onLimitChange={(limit) => handleFilterChange({ limit, page: 1 })}
+              onSortChange={handleSortChange}
+              sortBy={filters.sortBy || 'employeeCode'}
+              sortOrder={filters.sortOrder || 'asc'}
+              onSelectEmployee={(id) => setSelectedEmployeeId(id)}
+            />
+          </>
+        )}
+      </main>
 
       {/* Slide-Over Dossier Drawer */}
       <EmployeeDetailDrawer
@@ -302,7 +293,7 @@ export const App: React.FC = () => {
         open={Boolean(selectedEmployeeId)}
         onClose={() => setSelectedEmployeeId(null)}
       />
-    </Box>
+    </div>
   );
 };
 

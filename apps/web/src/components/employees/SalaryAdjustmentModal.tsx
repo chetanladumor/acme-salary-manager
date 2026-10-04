@@ -1,20 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Stack,
-  Typography,
-  Alert,
-  CircularProgress,
-  MenuItem,
-  Box,
-  Chip,
-} from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { TrendingUp, X } from 'lucide-react';
 import { EmployeeDetail, ChangeReason } from '../../types';
 import { useAdjustSalaryMutation } from '../../features/api/apiSlice';
 import { formatCurrency, calculatePercentageChange, getReasonLabel } from '../../utils/formatters';
@@ -61,7 +46,7 @@ export const SalaryAdjustmentModal: React.FC<SalaryAdjustmentModalProps> = ({
     }
   }, [employee, open, currentSalary]);
 
-  if (!employee) return null;
+  if (!open || !employee) return null;
 
   const diffAmount = newSalary - currentSalary;
   const percentageGain = calculatePercentageChange(currentSalary, newSalary);
@@ -99,155 +84,188 @@ export const SalaryAdjustmentModal: React.FC<SalaryAdjustmentModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <form onSubmit={handleSubmit}>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Box
-              sx={{
-                bgcolor: 'secondary.main',
-                color: 'common.white',
-                p: 1,
-                borderRadius: 1.5,
-                display: 'flex',
-              }}
-            >
-              <TrendingUpIcon fontSize="small" />
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Adjust Compensation
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {employee.fullName} ({employee.employeeCode}) • {employee.jobTitle}
-              </Typography>
-            </Box>
-          </Stack>
-        </DialogTitle>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSubmit}>
+          {/* Modal Header */}
+          <div className="modal-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  backgroundColor: 'var(--accent)',
+                  color: '#FFFFFF',
+                  padding: '8px',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                }}
+              >
+                <TrendingUp size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.15rem' }}>Adjust Compensation</h3>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {employee.fullName} ({employee.employeeCode}) • {employee.jobTitle}
+                </div>
+              </div>
+            </div>
 
-        <DialogContent dividers sx={{ py: 3 }}>
-          <Stack spacing={2.5}>
+            <button
+              type="button"
+              className="btn-icon"
+              onClick={onClose}
+              disabled={isLoading}
+              title="Close dialog"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <div className="modal-body">
             {errorMessage && (
-              <Alert severity="error" onClose={() => setErrorMessage(null)}>
-                {errorMessage}
-              </Alert>
+              <div className="alert alert-error">
+                <span>{errorMessage}</span>
+              </div>
             )}
 
             {successMessage && (
-              <Alert severity="success">
-                {successMessage}
-              </Alert>
+              <div className="alert alert-success">
+                <span>{successMessage}</span>
+              </div>
             )}
 
             {/* Live Delta Preview Card */}
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                bgcolor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
+            <div
+              style={{
+                padding: '16px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#F8FAFC',
+                border: '1px solid var(--border)',
+                marginBottom: '20px',
               }}
             >
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                     Current Base
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 700, color: '#475569' }}>
+                  </div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#475569' }}>
                     {formatCurrency(currentSalary, currency)}
-                  </Typography>
-                </Box>
+                  </div>
+                </div>
 
-                <Typography variant="h6" color="text.secondary">→</Typography>
+                <div style={{ fontSize: '1.25rem', color: 'var(--text-muted)' }}>→</div>
 
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                     Proposed New Base
-                  </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
-                    <Typography variant="body1" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary)' }}>
                       {formatCurrency(newSalary, currency)}
-                    </Typography>
-                    <Chip
-                      label={percentageGain}
-                      size="small"
-                      sx={{
-                        bgcolor: diffAmount >= 0 ? '#ECFDF5' : '#FEF2F2',
-                        color: diffAmount >= 0 ? '#065F46' : '#991B1B',
-                        fontWeight: 700,
+                    </span>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
                         fontSize: '0.75rem',
-                        height: 22,
+                        fontWeight: 700,
+                        backgroundColor: diffAmount >= 0 ? 'var(--success-bg)' : 'var(--danger-bg)',
+                        color: diffAmount >= 0 ? 'var(--success-text)' : 'var(--danger-text)',
                       }}
-                    />
-                  </Stack>
-                </Box>
-              </Stack>
-            </Box>
+                    >
+                      {percentageGain}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* New Salary Input */}
-            <TextField
-              label={`New Annual Salary (${currency})`}
-              type="number"
-              fullWidth
-              required
-              size="small"
-              value={newSalary === 0 ? '' : newSalary}
-              onChange={(e) => setNewSalary(e.target.value === '' ? 0 : Number(e.target.value))}
-              disabled={isLoading || Boolean(successMessage)}
-              inputProps={{ min: 1, step: 'any' }}
-              helperText={`Net adjustment: ${diffAmount >= 0 ? '+' : ''}${formatCurrency(diffAmount, currency)}`}
-            />
+            <div className="form-group">
+              <label className="form-label">
+                New Annual Salary ({currency})
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="any"
+                required
+                className="input-text"
+                value={newSalary === 0 ? '' : newSalary}
+                onChange={(e) =>
+                  setNewSalary(e.target.value === '' ? 0 : Number(e.target.value))
+                }
+                disabled={isLoading || Boolean(successMessage)}
+                style={{ width: '100%' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Net adjustment: {diffAmount >= 0 ? '+' : ''}
+                {formatCurrency(diffAmount, currency)}
+              </span>
+            </div>
 
             {/* Change Reason Dropdown */}
-            <TextField
-              select
-              label="Adjustment Reason"
-              fullWidth
-              required
-              size="small"
-              value={reason}
-              onChange={(e) => setReason(e.target.value as ChangeReason)}
+            <div className="form-group">
+              <label className="form-label">
+                Adjustment Reason
+              </label>
+              <select
+                className="select"
+                required
+                value={reason}
+                onChange={(e) => setReason(e.target.value as ChangeReason)}
+                disabled={isLoading || Boolean(successMessage)}
+                style={{ width: '100%' }}
+              >
+                {REASONS.map((r) => (
+                  <option key={r} value={r}>
+                    {getReasonLabel(r)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Effective Date Input */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">
+                Effective Date
+              </label>
+              <input
+                type="date"
+                required
+                className="input-text"
+                value={effectiveFrom}
+                onChange={(e) => setEffectiveFrom(e.target.value)}
+                disabled={isLoading || Boolean(successMessage)}
+                style={{ width: '100%' }}
+              />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Date from which the new salary record takes legal effect
+              </span>
+            </div>
+          </div>
+
+          {/* Modal Footer */}
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
               disabled={isLoading || Boolean(successMessage)}
             >
-              {REASONS.map((r) => (
-                <MenuItem key={r} value={r}>
-                  {getReasonLabel(r)}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            {/* Effective Date */}
-            <TextField
-              label="Effective Date"
-              type="date"
-              fullWidth
-              required
-              size="small"
-              value={effectiveFrom}
-              onChange={(e) => setEffectiveFrom(e.target.value)}
-              disabled={isLoading || Boolean(successMessage)}
-              InputLabelProps={{ shrink: true }}
-              helperText="Date from which the new salary record takes legal effect"
-            />
-          </Stack>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={onClose} disabled={isLoading} color="inherit">
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            disabled={isLoading || Boolean(successMessage)}
-            startIcon={isLoading ? <CircularProgress size={16} color="inherit" /> : null}
-            sx={{ fontWeight: 600 }}
-          >
-            {isLoading ? 'Processing...' : 'Apply Compensation Revision'}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+              {isLoading ? 'Processing...' : 'Apply Compensation Revision'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
