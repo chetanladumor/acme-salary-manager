@@ -32,6 +32,32 @@ describe('Salary Module API', () => {
       expect(response.body.success).toBe(false);
     });
 
+    it('rejects salary adjustment for HR_VIEWER role with 403 Forbidden', async () => {
+      const viewerLogin = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'viewer@acme.com',
+          password: process.env.SEED_ADMIN_PASSWORD || 'Admin#Pass2026!',
+        });
+
+      expect(viewerLogin.status).toBe(200);
+      const viewerToken = viewerLogin.body.data.token;
+
+      const response = await request(app)
+        .post('/api/employees/ACM-00001/salary')
+        .set('Authorization', `Bearer ${viewerToken}`)
+        .send({
+          annualSalary: 1650000,
+          currency: 'INR',
+          effectiveFrom: '2026-10-01',
+          reason: 'ANNUAL_REVIEW',
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error.code).toBe('FORBIDDEN');
+    });
+
     it('rejects zero salary payload', async () => {
       const response = await request(app)
         .post('/api/employees/ACM-00001/salary')

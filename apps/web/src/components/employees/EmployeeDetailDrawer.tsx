@@ -10,7 +10,10 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Lock,
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../app/store';
 import { useGetEmployeeByIdQuery } from '../../features/api/apiSlice';
 import {
   formatCurrency,
@@ -34,6 +37,9 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   const { data: employee, isLoading, error } = useGetEmployeeByIdQuery(employeeId || '', {
     skip: !employeeId || !open,
   });
+
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isAdmin = user?.role === 'HR_ADMIN';
 
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
   const [expandedPayouts, setExpandedPayouts] = useState<Record<string, boolean>>({});
@@ -216,15 +222,36 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => setAdjustmentModalOpen(true)}
-                  style={{ width: '100%' }}
-                >
-                  <TrendingUp size={16} />
-                  <span>Adjust Compensation</span>
-                </button>
+                {isAdmin ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => setAdjustmentModalOpen(true)}
+                    style={{ width: '100%' }}
+                  >
+                    <TrendingUp size={16} />
+                    <span>Adjust Compensation</span>
+                  </button>
+                ) : (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      padding: '10px 14px',
+                      backgroundColor: 'var(--bg-main)',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '0.8125rem',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border-color)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Lock size={14} />
+                    <span>View-only Mode (HR Admin required to adjust)</span>
+                  </div>
+                )}
               </div>
 
               {/* Card 2: Employment Profile & Demographics */}

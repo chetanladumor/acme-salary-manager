@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { EmployeeController } from './employee.controller';
 import { SalaryController } from '../salary/salary.controller';
-import { requireAuth } from '../../middleware/auth.middleware';
+import { requireAuth, requireRole } from '../../middleware/auth.middleware';
 
 export const employeeRouter = Router();
 
@@ -12,6 +12,6 @@ employeeRouter.get('/', EmployeeController.list);
 employeeRouter.get('/facets', EmployeeController.getFacets);
 employeeRouter.get('/:id', EmployeeController.getById);
 
-// Compensation adjustment & history
-employeeRouter.post('/:id/salary', SalaryController.adjust);
+// Compensation adjustment & history (Only HR_ADMIN can modify salaries)
+employeeRouter.post('/:id/salary', requireRole(['HR_ADMIN']), SalaryController.adjust);
 employeeRouter.get('/:id/salary', SalaryController.getHistory);
