@@ -1,6 +1,20 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, LeaveType } from '@prisma/client';
 import { prisma } from '../../db/prisma';
 import { EmployeeQueryInput } from './employee.schema';
+
+type LeaveBalanceKey = 'sickLeaveBalance' | 'casualLeaveBalance' | 'annualLeaveBalance';
+
+interface ServiceError extends Error {
+  statusCode: number;
+  code: string;
+}
+
+function createServiceError(message: string, statusCode: number, code: string): ServiceError {
+  const err = new Error(message) as ServiceError;
+  err.statusCode = statusCode;
+  err.code = code;
+  return err;
+}
 
 export class EmployeeService {
   // In-memory cache for filter facets (TTL: 5 minutes)
@@ -349,4 +363,6 @@ export class EmployeeService {
 
     return facets;
   }
+
+
 }
