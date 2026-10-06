@@ -13,6 +13,10 @@ export const store = configureStore({
     getDefaultMiddleware()
       .concat(apiSlice.middleware)
       .prepend(authListenerMiddleware.middleware),
+  devTools: {
+    trace: true,
+    traceLimit: 25,
+  },
 });
 
 setupListeners(store.dispatch);

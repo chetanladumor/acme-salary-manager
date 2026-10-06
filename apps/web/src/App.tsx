@@ -34,6 +34,7 @@ export const App: React.FC = () => {
 
   // Queries (only active when user is authenticated)
   const { data: facets } = useGetFacetsQuery(undefined, { skip: !isAuthenticated });
+
   const {
     data: employeesData,
     isLoading: isEmployeesLoading,
