@@ -1,5 +1,14 @@
-import React from 'react';
-import { ArrowUp, ArrowDown, ArrowUpDown, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import { EmployeeListItem, PaginationMeta, EmploymentStatus } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -52,6 +61,12 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
   sortOrder,
   onSelectEmployee,
 }) => {
+  const [pageInput, setPageInput] = useState(pagination.page.toString());
+
+  React.useEffect(() => {
+    setPageInput(pagination.page.toString());
+  }, [pagination.page]);
+
   const startRecord = (pagination.page - 1) * pagination.limit + 1;
   const endRecord = Math.min(pagination.page * pagination.limit, pagination.total);
 
@@ -308,24 +323,94 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
               : '0 of 0'}
           </span>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {/* First Page */}
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={pagination.page <= 1 || isLoading}
+              onClick={() => onPageChange(1)}
+              title="First Page"
+              style={{ padding: '6px 8px' }}
+            >
+              <ChevronsLeft size={16} />
+            </button>
+
+            {/* Previous Page */}
             <button
               type="button"
               className="btn btn-outline btn-sm"
               disabled={pagination.page <= 1 || isLoading}
               onClick={() => onPageChange(pagination.page - 1)}
               title="Previous Page"
+              style={{ padding: '6px 8px' }}
             >
               <ChevronLeft size={16} />
             </button>
+
+            {/* Page Jump Input & Total Pages */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '0 6px', fontSize: '0.875rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Page</span>
+              <input
+                type="number"
+                min={1}
+                max={pagination.totalPages || 1}
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const pageNum = parseInt(pageInput, 10);
+                    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
+                      onPageChange(pageNum);
+                    }
+                  }
+                }}
+                onBlur={() => {
+                  const pageNum = parseInt(pageInput, 10);
+                  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pagination.totalPages) {
+                    onPageChange(pageNum);
+                  } else {
+                    setPageInput(pagination.page.toString());
+                  }
+                }}
+                style={{
+                  width: '54px',
+                  textAlign: 'center',
+                  padding: '4px 6px',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-main)',
+                  color: 'var(--text-main)',
+                }}
+                title="Type a page number and press Enter to jump directly"
+              />
+              <span style={{ color: 'var(--text-muted)' }}>of {pagination.totalPages || 1}</span>
+            </div>
+
+            {/* Next Page */}
             <button
               type="button"
               className="btn btn-outline btn-sm"
               disabled={pagination.page >= pagination.totalPages || isLoading}
               onClick={() => onPageChange(pagination.page + 1)}
               title="Next Page"
+              style={{ padding: '6px 8px' }}
             >
               <ChevronRight size={16} />
+            </button>
+
+            {/* Last Page */}
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              disabled={pagination.page >= pagination.totalPages || isLoading}
+              onClick={() => onPageChange(pagination.totalPages)}
+              title="Last Page"
+              style={{ padding: '6px 8px' }}
+            >
+              <ChevronsRight size={16} />
             </button>
           </div>
         </div>

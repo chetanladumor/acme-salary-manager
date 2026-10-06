@@ -58,13 +58,22 @@ To maintain sub-15ms query execution times across 10,000 employees and tens of t
 ## 4. Monthly Disbursement Engine & Payroll Forecasting
 
 ### 4.1 Employee Monthly Pay Ledger
-For any selected employee, the API computes both their current monthly gross compensation:
-$$\text{Monthly Salary} = \left\lfloor \frac{\text{Annual Salary}}{12} \right\rceil$$
+For any selected employee, the API computes their current monthly gross compensation:
 
-And reconstructs a 12-month historical disbursement ledger by matching monthly payment dates (e.g. 28th of each calendar month) against the active compensation record in effect during that pay cycle.
+```text
+Monthly Gross Salary = Math.round(Annual Salary / 12)
+```
+
+The system reconstructs a 12-month historical disbursement ledger by matching monthly payment dates (e.g., 28th of each calendar month) against the active compensation record in effect during that pay cycle.
 
 ### 4.2 Next-Month Payroll Cashflow Forecast
-The analytics engine computes total next-month organizational payroll obligations for each operating currency:
-$$\text{Next Month Total Payroll}_{\text{currency}} = \sum_{e \in \text{Active Employees}} \left\lfloor \frac{\text{Active Salary}_e}{12} \right\rceil$$
+The analytics engine computes total next-month organizational payroll obligations grouped by operating currency:
 
-This guarantees that HR Executives and CFOs know their exact cash liquidity requirements per country and currency for the upcoming payroll run without imprecise cross-currency foreign exchange distortions.
+```text
+Next Month Total Payroll (per Currency) = 
+  SUM( Math.round(Annual Salary / 12) ) for all ACTIVE employees
+```
+
+**Key Highlights:**
+- **Active Employees Only**: Only employees with `status = 'ACTIVE'` are included in upcoming payroll.
+- **Currency Segregation**: Grouped separately by currency (`USD`, `EUR`, `GBP`, `INR`, etc.) so HR Executives and CFOs know their exact cash liquidity requirements per jurisdiction without foreign exchange conversion inaccuracies.
