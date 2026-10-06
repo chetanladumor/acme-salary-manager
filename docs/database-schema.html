@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACME Salary Manager - Database Schema & Relationships</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --card-hover: #475569;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --pk-color: #f59e0b;
+      --fk-color: #38bdf8;
+      --accent: #6366f1;
+      --line-color: #64748b;
+      --line-active: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      overflow-x: auto;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-header {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.85rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 1400px;
+      height: 980px;
+      margin: 0 auto;
+      background: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 24px 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    svg#connectors {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .table-card {
+      position: absolute;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      z-index: 2;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .table-card:hover {
+      border-color: var(--card-hover);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+    }
+
+    .table-header {
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-top-left-radius: 9px;
+      border-top-right-radius: 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-users { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+    .header-employees { background: linear-gradient(135deg, #065f46, #10b981); }
+    .header-salary { background: linear-gradient(135deg, #7c2d12, #f97316); }
+    .header-payroll { background: linear-gradient(135deg, #581c87, #a855f7); }
+    .header-leaves { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+    .header-audit { background: linear-gradient(135deg, #374151, #6b7280); }
+
+    .table-count {
+      font-size: 0.7rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .table-rows {
+      max-height: 380px;
+      overflow-y: auto;
+      font-size: 0.8rem;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      position: relative;
+    }
+
+    .row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .field-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .field-type {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+
+    .tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .tag-pk {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--pk-color);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .tag-fk {
+      background: rgba(56, 189, 248, 0.2);
+      color: var(--fk-color);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .tag-uk {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    /* Connection line styling */
+    path.relation-line {
+      fill: none;
+      stroke: var(--line-color);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      opacity: 0.65;
+      transition: stroke 0.3s, stroke-width 0.3s, opacity 0.3s;
+    }
+
+    path.relation-line:hover,
+    path.relation-line.active {
+      stroke: var(--line-active);
+      stroke-width: 3.5;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>
+      <span>⚡ PostgreSQL Relational Schema</span>
+      <span class="badge-header">Prisma ORM • 6 Tables</span>
+    </h1>
+
+    <div class="legend">
+      <div class="legend-item">
+        <span class="dot" style="background: var(--pk-color)"></span>
+        <span>Primary Key (PK)</span>
+      </div>
+      <div class="legend-item">
+        <span class="dot" style="background: var(--fk-color)"></span>
+        <span>Foreign Key (FK)</span>
+      </div>
+      <div class="legend-item">
+        <span class="dot" style="background: #a855f7"></span>
+        <span>Unique (UK)</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="canvas-container">
+    <!-- SVG Connector Lines -->
+    <svg id="connectors">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
+        </marker>
+      </defs>
+
+      <!-- 1. employees.id -> salary_records.employeeId -->
+      <path id="line-emp-salary" class="relation-line" d="M 440 280 C 470 280, 480 180, 520 180" marker-end="url(#arrow)" />
+
+      <!-- 2. employees.id -> employee_leaves.employeeId -->
+      <path id="line-emp-leaves" class="relation-line" d="M 440 340 C 470 340, 480 620, 520 620" marker-end="url(#arrow)" />
+
+      <!-- 3. employees.id -> payroll_disbursements.employeeId -->
+      <path id="line-emp-payroll" class="relation-line" d="M 440 400 C 650 400, 750 350, 940 350" marker-end="url(#arrow)" />
+
+      <!-- 4. salary_records.id -> payroll_disbursements.salaryRecordId -->
+      <path id="line-sal-payroll" class="relation-line" d="M 840 220 C 890 220, 890 320, 940 320" marker-end="url(#arrow)" />
+
+      <!-- 5. users.id -> audit_logs.actorId -->
+      <path id="line-user-audit" class="relation-line" d="M 440 820 C 470 820, 480 840, 520 840" marker-end="url(#arrow)" />
+
+      <!-- 6. employees.id -> audit_logs.employeeId -->
+      <path id="line-emp-audit" class="relation-line" d="M 280 560 C 280 720, 480 880, 520 880" marker-end="url(#arrow)" />
+    </svg>
+
+    <!-- Table 1: employees (Center Anchor) -->
+    <div class="table-card" id="tbl-employees" style="top: 60px; left: 120px;">
+      <div class="table-header header-employees">
+        <span>🏢 employees</span>
+        <span class="table-count">Core Master</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row">
+          <span class="field-name"><span class="tag tag-uk">UK</span> employeeCode</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name"><span class="tag tag-uk">UK</span> email</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">firstName</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">lastName</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">country / code</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">department</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">jobTitle</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">status</span>
+          <span class="field-type">ACTIVE / INACTIVE</span>
+        </div>
+        <div class="row">
+          <span class="field-name">hireDate</span>
+          <span class="field-type">DateTime</span>
+        </div>
+        <div class="row">
+          <span class="field-name">sickLeaveBalance</span>
+          <span class="field-type">Int (10)</span>
+        </div>
+        <div class="row">
+          <span class="field-name">casualLeaveBalance</span>
+          <span class="field-type">Int (12)</span>
+        </div>
+        <div class="row">
+          <span class="field-name">annualLeaveBalance</span>
+          <span class="field-type">Int (15)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 2: salary_records -->
+    <div class="table-card" id="tbl-salary" style="top: 60px; left: 520px;">
+      <div class="table-header header-salary">
+        <span>💰 salary_records</span>
+        <span class="table-count">1 : N</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> employeeId</span>
+          <span class="field-type">→ employees.id</span>
+        </div>
+        <div class="row">
+          <span class="field-name">annualSalary</span>
+          <span class="field-type">Decimal(12, 2)</span>
+        </div>
+        <div class="row">
+          <span class="field-name">currency</span>
+          <span class="field-type">USD, INR, EUR...</span>
+        </div>
+        <div class="row">
+          <span class="field-name">effectiveFrom</span>
+          <span class="field-type">DateTime</span>
+        </div>
+        <div class="row">
+          <span class="field-name">effectiveTo</span>
+          <span class="field-type">NULL if active</span>
+        </div>
+        <div class="row">
+          <span class="field-name">reason</span>
+          <span class="field-type">ChangeReason</span>
+        </div>
+        <div class="row">
+          <span class="field-name">createdAt</span>
+          <span class="field-type">DateTime</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 3: employee_leaves -->
+    <div class="table-card" id="tbl-leaves" style="top: 480px; left: 520px;">
+      <div class="table-header header-leaves">
+        <span>🌴 employee_leaves</span>
+        <span class="table-count">1 : N</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> employeeId</span>
+          <span class="field-type">→ employees.id</span>
+        </div>
+        <div class="row">
+          <span class="field-name">leaveType</span>
+          <span class="field-type">SICK / CASUAL...</span>
+        </div>
+        <div class="row">
+          <span class="field-name">startDate</span>
+          <span class="field-type">DateTime</span>
+        </div>
+        <div class="row">
+          <span class="field-name">endDate</span>
+          <span class="field-type">DateTime</span>
+        </div>
+        <div class="row">
+          <span class="field-name">daysCount</span>
+          <span class="field-type">Int</span>
+        </div>
+        <div class="row">
+          <span class="field-name">isPaid</span>
+          <span class="field-type">Boolean</span>
+        </div>
+        <div class="row">
+          <span class="field-name">status</span>
+          <span class="field-type">APPROVED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 4: payroll_disbursements -->
+    <div class="table-card" id="tbl-payroll" style="top: 140px; left: 940px;">
+      <div class="table-header header-payroll">
+        <span>📄 payroll_disbursements</span>
+        <span class="table-count">Monthly Payslips</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> employeeId</span>
+          <span class="field-type">→ employees.id</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> salaryRecordId</span>
+          <span class="field-type">→ salary_records.id</span>
+        </div>
+        <div class="row">
+          <span class="field-name">payPeriod</span>
+          <span class="field-type">YYYY-MM</span>
+        </div>
+        <div class="row">
+          <span class="field-name">grossSalary</span>
+          <span class="field-type">Decimal(12, 2)</span>
+        </div>
+        <div class="row">
+          <span class="field-name">leaveDeduction</span>
+          <span class="field-type">LOP Deductions</span>
+        </div>
+        <div class="row">
+          <span class="field-name">taxDeduction</span>
+          <span class="field-type">Decimal(12, 2)</span>
+        </div>
+        <div class="row">
+          <span class="field-name">netSalary</span>
+          <span class="field-type">Net Pay</span>
+        </div>
+        <div class="row">
+          <span class="field-name">paidLeaveDays</span>
+          <span class="field-type">Int</span>
+        </div>
+        <div class="row">
+          <span class="field-name">unpaidLeaveDays</span>
+          <span class="field-type">Int</span>
+        </div>
+        <div class="row">
+          <span class="field-name">status</span>
+          <span class="field-type">PAID / SCHEDULED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 5: users -->
+    <div class="table-card" id="tbl-users" style="top: 720px; left: 120px;">
+      <div class="table-header header-users">
+        <span>👤 users</span>
+        <span class="table-count">Auth / RBAC</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row">
+          <span class="field-name"><span class="tag tag-uk">UK</span> email</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">name</span>
+          <span class="field-type">String</span>
+        </div>
+        <div class="row">
+          <span class="field-name">role</span>
+          <span class="field-type">HR_ADMIN / HR_VIEWER</span>
+        </div>
+        <div class="row">
+          <span class="field-name">passwordHash</span>
+          <span class="field-type">bcrypt(10)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table 6: audit_logs -->
+    <div class="table-card" id="tbl-audit" style="top: 720px; left: 520px;">
+      <div class="table-header header-audit">
+        <span>🛡️ audit_logs</span>
+        <span class="table-count">Audit Trail</span>
+      </div>
+      <div class="table-rows">
+        <div class="row">
+          <span class="field-name"><span class="tag tag-pk">PK</span> id</span>
+          <span class="field-type">UUID</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> actorId</span>
+          <span class="field-type">→ users.id</span>
+        </div>
+        <div class="row" style="background: rgba(56, 189, 248, 0.08);">
+          <span class="field-name"><span class="tag tag-fk">FK</span> employeeId</span>
+          <span class="field-type">→ employees.id</span>
+        </div>
+        <div class="row">
+          <span class="field-name">action</span>
+          <span class="field-type">COMPENSATION_ADJUSTED</span>
+        </div>
+        <div class="row">
+          <span class="field-name">entityType</span>
+          <span class="field-type">SalaryRecord</span>
+        </div>
+        <div class="row">
+          <span class="field-name">metadata</span>
+          <span class="field-type">JSON (old/new diff)</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
