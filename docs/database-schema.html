@@ -219,6 +219,158 @@
       stroke-width: 3.5;
       opacity: 1;
     }
+
+    /* Analytics Section Styles */
+    .analytics-section {
+      max-width: 1400px;
+      margin: 40px auto 0 auto;
+    }
+
+    .section-header {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 18px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .analytics-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .analytics-card:hover {
+      border-color: var(--card-hover);
+      transform: translateY(-2px);
+    }
+
+    .analytics-card-header {
+      padding: 12px 18px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-kpi-core { background: linear-gradient(135deg, #312e81, #4f46e5); }
+    .header-kpi-payroll { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+    .header-kpi-dept { background: linear-gradient(135deg, #065f46, #10b981); }
+    .header-kpi-reasons { background: linear-gradient(135deg, #7c2d12, #ea580c); }
+
+    .analytics-card-body {
+      padding: 16px;
+    }
+
+    .model-row {
+      display: grid;
+      grid-template-columns: 180px 110px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .model-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .model-field {
+      font-family: monospace;
+      font-weight: 600;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .model-type {
+      font-family: monospace;
+      color: #fbbf24;
+      font-size: 0.75rem;
+    }
+
+    .model-desc {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    .source-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .json-container {
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      position: relative;
+    }
+
+    .json-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .json-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .json-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+      max-height: 480px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+
+    .json-key { color: #7dd3fc; }
+    .json-string { color: #86efac; }
+    .json-number { color: #fde047; }
+    .json-boolean { color: #f472b6; }
   </style>
 </head>
 <body>
@@ -538,6 +690,225 @@
     </div>
 
   </div>
+
+  <!-- Section 2: Analytics & KPI Aggregation Data Model -->
+  <section class="analytics-section">
+    <div class="section-header">
+      <h2>
+        <span>📊 Analytics & Executive KPI Data Model</span>
+        <span class="badge-header">Route: GET /api/analytics/overview • In-Memory Aggregations</span>
+      </h2>
+      <div class="source-badge">Derived from employees, salary_history & leave_balances</div>
+    </div>
+
+    <div class="analytics-grid">
+      <!-- KPI Core Metrics -->
+      <div class="analytics-card">
+        <div class="analytics-card-header header-kpi-core">
+          <span>👥 Core Workforce KPIs (`kpis`)</span>
+          <span class="table-count">7 Aggregated Metrics</span>
+        </div>
+        <div class="analytics-card-body">
+          <div class="model-row">
+            <span class="model-field">totalHeadcount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Total seeded headcount (10,000)</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">activeHeadcount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Employees with status = ACTIVE</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">onLeaveHeadcount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Employees on leave (status = ON_LEAVE)</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">inactiveHeadcount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Terminated employees</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">totalHistoricalRevisions</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Lifetime salary revisions logged</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">departmentsCount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Distinct business departments</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">countriesCount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Distinct countries of operation</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Currency Cashflow Forecast -->
+      <div class="analytics-card">
+        <div class="analytics-card-header header-kpi-payroll">
+          <span>💵 Payroll Cashflow Contract (`nextMonthPayrollByCurrency`)</span>
+          <span class="table-count">Currency Isolated</span>
+        </div>
+        <div class="analytics-card-body">
+          <div class="model-row">
+            <span class="model-field">currency</span>
+            <span class="model-type">ISO-4217</span>
+            <span class="model-desc">Currency code: USD, EUR, GBP, INR</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">grossMonthlyPayroll</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Agreed total monthly salary commitment</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">leaveDeductions...</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Cash retained: Unpaid leave (LOP) savings</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">payableGross...</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Actual cashflow obligation (Gross - LOP)</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">deductionsMonthly...</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Taxes & social security to authorities</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">netMonthlyPayroll</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Direct liquid transfer to employee banks</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Department Distribution -->
+      <div class="analytics-card">
+        <div class="analytics-card-header header-kpi-dept">
+          <span>🏢 Department Salary Metrics (`DepartmentMetric[]`)</span>
+          <span class="table-count">Segmented</span>
+        </div>
+        <div class="analytics-card-body">
+          <div class="model-row">
+            <span class="model-field">department</span>
+            <span class="model-type">string</span>
+            <span class="model-desc">Engineering, Sales, Marketing, etc.</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">headcount</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Active employees in department</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">avgSalary</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Mean gross annual salary</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">minSalary</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Lowest salary band in department</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">maxSalary</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Highest salary band in department</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revision Reason Analytics -->
+      <div class="analytics-card">
+        <div class="analytics-card-header header-kpi-reasons">
+          <span>🎯 Revision Reasons Analytics (`ReasonMetric[]`)</span>
+          <span class="table-count">Frequency Share</span>
+        </div>
+        <div class="analytics-card-body">
+          <div class="model-row">
+            <span class="model-field">reason</span>
+            <span class="model-type">ReasonEnum</span>
+            <span class="model-desc">PROMOTION, ANNUAL_REVIEW, MARKET, etc.</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">count</span>
+            <span class="model-type">number</span>
+            <span class="model-desc">Occurrences in salary_history table</span>
+          </div>
+          <div class="model-row">
+            <span class="model-field">percentage</span>
+            <span class="model-type">string</span>
+            <span class="model-desc">Share of all salary adjustments (e.g. "41.2%")</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live JSON Response Payload Contract -->
+    <div class="json-container">
+      <div class="json-header">
+        <div class="json-title">
+          <span>📦 Complete Analytics Response Payload Contract (`AnalyticsOverview`)</span>
+        </div>
+        <span class="source-badge">Status 200 OK • JSON</span>
+      </div>
+      <div class="json-code">{
+  <span class="json-key">"status"</span>: <span class="json-string">"success"</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"kpis"</span>: {
+      <span class="json-key">"totalHeadcount"</span>: <span class="json-number">10000</span>,
+      <span class="json-key">"activeHeadcount"</span>: <span class="json-number">9450</span>,
+      <span class="json-key">"onLeaveHeadcount"</span>: <span class="json-number">380</span>,
+      <span class="json-key">"inactiveHeadcount"</span>: <span class="json-number">170</span>,
+      <span class="json-key">"totalHistoricalRevisions"</span>: <span class="json-number">24830</span>,
+      <span class="json-key">"departmentsCount"</span>: <span class="json-number">8</span>,
+      <span class="json-key">"countriesCount"</span>: <span class="json-number">5</span>,
+      <span class="json-key">"nextMonthPayrollByCurrency"</span>: [
+        {
+          <span class="json-key">"country"</span>: <span class="json-string">"United States"</span>,
+          <span class="json-key">"currency"</span>: <span class="json-string">"USD"</span>,
+          <span class="json-key">"headcount"</span>: <span class="json-number">4200</span>,
+          <span class="json-key">"grossMonthlyPayroll"</span>: <span class="json-number">32500000.00</span>,
+          <span class="json-key">"leaveDeductionsMonthlyPayroll"</span>: <span class="json-number">245000.00</span>,
+          <span class="json-key">"payableGrossMonthlyPayroll"</span>: <span class="json-number">32255000.00</span>,
+          <span class="json-key">"deductionsMonthlyPayroll"</span>: <span class="json-number">7096100.00</span>,
+          <span class="json-key">"netMonthlyPayroll"</span>: <span class="json-number">25158900.00</span>
+        },
+        {
+          <span class="json-key">"country"</span>: <span class="json-string">"Germany"</span>,
+          <span class="json-key">"currency"</span>: <span class="json-string">"EUR"</span>,
+          <span class="json-key">"headcount"</span>: <span class="json-number">2100</span>,
+          <span class="json-key">"grossMonthlyPayroll"</span>: <span class="json-number">14800000.00</span>,
+          <span class="json-key">"leaveDeductionsMonthlyPayroll"</span>: <span class="json-number">110000.00</span>,
+          <span class="json-key">"payableGrossMonthlyPayroll"</span>: <span class="json-number">14690000.00</span>,
+          <span class="json-key">"deductionsMonthlyPayroll"</span>: <span class="json-number">3525600.00</span>,
+          <span class="json-key">"netMonthlyPayroll"</span>: <span class="json-number">11164400.00</span>
+        }
+      ]
+    },
+    <span class="json-key">"departments"</span>: [
+      {
+        <span class="json-key">"department"</span>: <span class="json-string">"Engineering"</span>,
+        <span class="json-key">"headcount"</span>: <span class="json-number">3120</span>,
+        <span class="json-key">"avgSalary"</span>: <span class="json-number">118500.00</span>,
+        <span class="json-key">"minSalary"</span>: <span class="json-number">65000.00</span>,
+        <span class="json-key">"maxSalary"</span>: <span class="json-number">225000.00</span>
+      }
+    ],
+    <span class="json-key">"reasons"</span>: [
+      { <span class="json-key">"reason"</span>: <span class="json-string">"ANNUAL_REVIEW"</span>, <span class="json-key">"count"</span>: <span class="json-number">10820</span>, <span class="json-key">"percentage"</span>: <span class="json-string">"43.58%"</span> },
+      { <span class="json-key">"reason"</span>: <span class="json-string">"PROMOTION"</span>, <span class="json-key">"count"</span>: <span class="json-number">6210</span>, <span class="json-key">"percentage"</span>: <span class="json-string">"25.01%"</span> },
+      { <span class="json-key">"reason"</span>: <span class="json-string">"MARKET_ADJUSTMENT"</span>, <span class="json-key">"count"</span>: <span class="json-number">4800</span>, <span class="json-key">"percentage"</span>: <span class="json-string">"19.33%"</span> }
+    ],
+    <span class="json-key">"calculatedAt"</span>: <span class="json-string">"2026-10-07T11:15:00.000Z"</span>
+  }
+}</div>
+    </div>
+  </section>
 
 </body>
 </html>
