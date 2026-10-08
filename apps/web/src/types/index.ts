@@ -15,6 +15,19 @@ export interface User {
   role: string;
 }
 
+export interface ExportedEmployee {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  department: string;
+  jobTitle: string;
+  country: string;
+  status: EmploymentStatus;
+  hireDate: string;
+}
+
 export interface CurrentSalary {
   id: string;
   annualSalary: number;

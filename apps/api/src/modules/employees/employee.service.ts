@@ -16,6 +16,23 @@ function createServiceError(message: string, statusCode: number, code: string): 
   return err;
 }
 
+export const exportEmployeeSelect = {
+  id: true,
+  employeeCode: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  department: true,
+  jobTitle: true,
+  country: true,
+  status: true,
+  hireDate: true,
+} as const;
+
+export type ExportedEmployee = Prisma.EmployeeGetPayload<{
+  select: typeof exportEmployeeSelect;
+}>;
+
 export class EmployeeService {
   // In-memory cache for filter facets (TTL: 5 minutes)
   private static facetsCache: {
@@ -364,5 +381,73 @@ export class EmployeeService {
     return facets;
   }
 
+  // Export employees with cursor-based batching
+  static async exportEmployee(query: EmployeeQueryInput): Promise<ExportedEmployee[]> {
+    const { search, country, department, jobTitle, status, currency, minSalary, maxSalary } = query;
+    const where: Prisma.EmployeeWhereInput = {};
 
+    if (search && search.length > 0) {
+      const terms = search.split(/\s+/).filter(Boolean);
+      if (terms.length === 1) {
+        where.OR = [
+          { employeeCode: { contains: terms[0], mode: 'insensitive' } },
+          { firstName: { contains: terms[0], mode: 'insensitive' } },
+          { lastName: { contains: terms[0], mode: 'insensitive' } },
+          { email: { contains: terms[0], mode: 'insensitive' } },
+        ];
+      } else if (terms.length >= 2) {
+        where.AND = terms.map((t) => ({
+          OR: [
+            { firstName: { contains: t, mode: 'insensitive' } },
+            { lastName: { contains: t, mode: 'insensitive' } },
+            { employeeCode: { contains: t, mode: 'insensitive' } },
+          ],
+        }));
+      }
+    }
+
+    if (country) where.country = { equals: country, mode: 'insensitive' };
+    if (department) where.department = { equals: department, mode: 'insensitive' };
+    if (jobTitle) where.jobTitle = { contains: jobTitle, mode: 'insensitive' };
+    if (status) where.status = status;
+
+    if (currency || minSalary !== undefined || maxSalary !== undefined) {
+      const salaryCondition: Prisma.SalaryRecordWhereInput = { effectiveTo: null };
+      if (currency) salaryCondition.currency = currency;
+      if (minSalary !== undefined || maxSalary !== undefined) {
+        salaryCondition.annualSalary = {
+          ...(minSalary !== undefined ? { gte: minSalary } : {}),
+          ...(maxSalary !== undefined ? { lte: maxSalary } : {}),
+        };
+      }
+      where.salaryRecords = { some: salaryCondition };
+    }
+
+    const batchSize = 2000;
+    let cursorId: string | null = null;
+    let hasMore = true;
+    const allEmployees: ExportedEmployee[] = [];
+
+    while (hasMore) {
+      const batch: ExportedEmployee[] = await prisma.employee.findMany({
+        take: batchSize,
+        skip: cursorId ? 1 : 0,
+        ...(cursorId ? { cursor: { id: cursorId } } : {}),
+        where,
+        orderBy: { id: 'asc' },
+        select: exportEmployeeSelect,
+      });
+
+      if (batch.length === 0) break;
+
+      allEmployees.push(...batch);
+      cursorId = batch[batch.length - 1].id;
+
+      if (batch.length < batchSize) {
+        hasMore = false;
+      }
+    }
+
+    return allEmployees;
+  }
 }

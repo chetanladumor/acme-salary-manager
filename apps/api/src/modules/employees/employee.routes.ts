@@ -10,6 +10,7 @@ employeeRouter.use(requireAuth);
 
 employeeRouter.get('/', EmployeeController.list);
 employeeRouter.get('/facets', EmployeeController.getFacets);
+employeeRouter.get('/export', EmployeeController.exportEmployee);
 employeeRouter.get('/:id', EmployeeController.getById);
 
 // Compensation adjustment & history (Only HR_ADMIN can modify salaries)

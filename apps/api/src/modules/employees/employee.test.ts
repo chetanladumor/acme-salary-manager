@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { app } from '../../app';
+import { ExportedEmployee } from './employee.service';
 
 describe('Employee Module API', () => {
   let authToken: string;
@@ -109,6 +110,55 @@ describe('Employee Module API', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.length).toBeGreaterThan(0);
       response.body.data.forEach((emp: any) => {
+        expect(emp.status).toBe('ACTIVE');
+      });
+    });
+
+  });
+
+  describe('GET /api/employees/export (Bulk Data Export)', () => {
+    it('rejects unauthenticated export request with 401', async () => {
+      const response = await request(app).get('/api/employees/export');
+      expect(response.status).toBe(401);
+    });
+
+    it('exports all employees with complete profile attributes schema', async () => {
+      const response = await request(app)
+        .get('/api/employees/export')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.length).toBeGreaterThan(0);
+
+      // Verify shape of exported record
+      const sample = response.body.data[0];
+      expect(sample).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          employeeCode: expect.any(String),
+          firstName: expect.any(String),
+          lastName: expect.any(String),
+          email: expect.any(String),
+          department: expect.any(String),
+          jobTitle: expect.any(String),
+          country: expect.any(String),
+          status: expect.any(String),
+        })
+      );
+    });
+
+    it('exports employees filtered by department and employment status', async () => {
+      const response = await request(app)
+        .get('/api/employees/export?department=Engineering&status=ACTIVE')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      response.body.data.forEach((emp: ExportedEmployee) => {
+        expect(emp.department).toBe('Engineering');
         expect(emp.status).toBe('ACTIVE');
       });
     });

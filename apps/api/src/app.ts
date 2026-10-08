@@ -42,6 +42,11 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[${req.method}] ${req.url}`);
+  next();
+})
+
 // Mount module routes
 app.use('/api/auth', authRouter);
 app.use('/api/employees', employeeRouter);

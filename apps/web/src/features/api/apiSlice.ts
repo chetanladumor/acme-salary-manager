@@ -8,6 +8,7 @@ import {
   FilterFacets,
   EmployeeFilterParams,
   AnalyticsOverview,
+  ExportedEmployee,
 } from '../../types';
 
 const rawApiUrl = (import.meta as any).env?.VITE_API_URL;
@@ -128,6 +129,21 @@ export const apiSlice = createApi({
       transformResponse: (response: { success: boolean; data: AnalyticsOverview }) => response.data,
       providesTags: [{ type: 'Employees', id: 'LIST' }],
     }),
+
+    exportEmployees: builder.query<ExportedEmployee[], Partial<EmployeeFilterParams>>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params.search) queryParams.set('search', params.search);
+        if (params.country) queryParams.set('country', params.country);
+        if (params.department) queryParams.set('department', params.department);
+        if (params.status) queryParams.set('status', params.status);
+        if (params.currency) queryParams.set('currency', params.currency);
+        if (params.minSalary !== undefined) queryParams.set('minSalary', params.minSalary.toString());
+        if (params.maxSalary !== undefined) queryParams.set('maxSalary', params.maxSalary.toString());
+        return `/employees/export?${queryParams.toString()}`;
+      },
+      transformResponse: (response: { success: boolean; data: ExportedEmployee[] }) => response.data,
+    }),
   }),
 });
 
@@ -139,4 +155,5 @@ export const {
   useGetFacetsQuery,
   useAdjustSalaryMutation,
   useGetAnalyticsQuery,
+  useLazyExportEmployeesQuery,
 } = apiSlice;

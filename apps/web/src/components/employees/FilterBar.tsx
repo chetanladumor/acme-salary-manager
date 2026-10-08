@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Filter, RotateCcw } from 'lucide-react';
+import { Search, X, Filter, RotateCcw, Download, Loader2 } from 'lucide-react';
 import { FilterFacets, EmployeeFilterParams } from '../../types';
+import { useLazyExportEmployeesQuery } from '../../features/api/apiSlice';
+import { generateEmployeesCsv, downloadCsv } from '../../utils/csv';
 
 interface FilterBarProps {
   facets?: FilterFacets;
@@ -37,6 +39,20 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     filters.status,
     filters.currency,
   ].filter(Boolean).length;
+
+  const [triggerExport, { isFetching: isExporting }] = useLazyExportEmployeesQuery();
+
+  const handleExportCsv = async () => {
+    try {
+      const data = await triggerExport(filters, true).unwrap();
+      if (data && data.length > 0) {
+        const csv = generateEmployeesCsv(data);
+        downloadCsv(csv);
+      }
+    } catch (err) {
+      console.error('Failed to export employees:', err);
+    }
+  };
 
   return (
     <div className="card" style={{ marginBottom: '24px' }}>
@@ -115,6 +131,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 records
               </span>
             )}
+
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleExportCsv}
+              disabled={isExporting || totalResults === 0}
+              title="Export matching employees to CSV"
+            >
+              {isExporting ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
+              <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+            </button>
 
             {activeFilterCount > 0 && (
               <button

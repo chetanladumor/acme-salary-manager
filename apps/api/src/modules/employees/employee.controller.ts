@@ -55,4 +55,29 @@ export class EmployeeController {
       next(err);
     }
   }
+
+  static async exportEmployee(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedQuery = employeeQuerySchema.parse(req.query);
+      const employees = await EmployeeService.exportEmployee(validatedQuery);
+      res.status(200).json({
+        success: true,
+        data: employees,
+      });
+    } catch (err: any) {
+      if (err.name === 'ZodError') {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid query parameters',
+            details: err.errors,
+          },
+        });
+        return;
+      }
+      next(err);
+    }
+  }
+
 }
