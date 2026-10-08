@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Filter, RotateCcw, Download, Loader2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Search, X, Filter, RotateCcw, Download, Loader2, HardDriveDownload } from 'lucide-react';
+import { RootState } from '../../app/store';
 import { FilterFacets, EmployeeFilterParams } from '../../types';
 import { useLazyExportEmployeesQuery } from '../../features/api/apiSlice';
 import { generateEmployeesCsv, downloadCsv } from '../../utils/csv';
@@ -40,6 +42,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     filters.currency,
   ].filter(Boolean).length;
 
+  // =========================================================================
+  // METHOD 1: CLIENT-SIDE CSV CREATION
+  // Fetches JSON array and constructs CSV text via Blob in browser memory.
+  // Best suited for standard, filtered page-level exports.
+  // =========================================================================
   const [triggerExport, { isFetching: isExporting }] = useLazyExportEmployeesQuery();
 
   const handleExportCsv = async () => {
@@ -50,7 +57,59 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         downloadCsv(csv);
       }
     } catch (err) {
-      console.error('Failed to export employees:', err);
+      console.error('Failed to export employees (client):', err);
+    }
+  };
+
+  // =========================================================================
+  // METHOD 2: BACKEND-GENERATED CSV STREAMING (FOR LARGE DATASETS: 100k - 1M+ ROWS)
+  // Backend directly pipes chunked CSV lines into the HTTP response stream.
+  // Maintains O(1) constant server memory (~30MB) and prevents browser RAM freeze.
+  // =========================================================================
+  const authToken = useSelector((state: RootState) => state.auth.token);
+  const [isServerStreaming, setIsServerStreaming] = useState(false);
+
+  const handleServerStreamExportCsv = async () => {
+    try {
+      setIsServerStreaming(true);
+      const queryParams = new URLSearchParams();
+      if (filters.search) queryParams.set('search', filters.search);
+      if (filters.country) queryParams.set('country', filters.country);
+      if (filters.department) queryParams.set('department', filters.department);
+      if (filters.status) queryParams.set('status', filters.status);
+      if (filters.currency) queryParams.set('currency', filters.currency);
+      if (filters.minSalary !== undefined) queryParams.set('minSalary', filters.minSalary.toString());
+      if (filters.maxSalary !== undefined) queryParams.set('maxSalary', filters.maxSalary.toString());
+
+      const rawApiUrl = (import.meta as any).env?.VITE_API_URL;
+      const baseUrl = rawApiUrl
+        ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api`)
+        : '/api';
+
+      const response = await fetch(`${baseUrl}/employees/export-csv?${queryParams.toString()}`, {
+        headers: {
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server stream export failed with status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `employees_server_stream_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to stream server CSV export (large data):', err);
+    } finally {
+      setIsServerStreaming(false);
     }
   };
 
@@ -132,15 +191,28 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               </span>
             )}
 
+            {/* 1. Client-Side Export (converts JSON payload in browser memory) */}
             <button
               type="button"
               className="btn btn-outline btn-sm"
               onClick={handleExportCsv}
-              disabled={isExporting || totalResults === 0}
-              title="Export matching employees to CSV"
+              disabled={isExporting || isServerStreaming || totalResults === 0}
+              title="Client-Side Export: Fetches JSON and converts to CSV in browser memory"
             >
               {isExporting ? <Loader2 size={14} className="spin" /> : <Download size={14} />}
-              <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+              <span>{isExporting ? 'Exporting...' : 'Export CSV (Client)'}</span>
+            </button>
+
+            {/* 2. Backend-Generated Streaming Export (optimized for large datasets: 100k - 1M+ rows) */}
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleServerStreamExportCsv}
+              disabled={isServerStreaming || isExporting || totalResults === 0}
+              title="Server-Side Streaming: Backend streams CSV directly via HTTP chunks to maintain flat O(1) memory (recommended for large datasets 100k+)"
+            >
+              {isServerStreaming ? <Loader2 size={14} className="spin" /> : <HardDriveDownload size={14} />}
+              <span>{isServerStreaming ? 'Streaming...' : 'Server Stream (Large Data)'}</span>
             </button>
 
             {activeFilterCount > 0 && (

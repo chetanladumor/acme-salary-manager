@@ -80,4 +80,35 @@ export class EmployeeController {
     }
   }
 
+  // =========================================================================
+  // BACKEND-GENERATED CSV STREAM (FOR LARGE DATASETS: 100k - 1M+ ROWS)
+  // Directly streams RFC-4180 CSV rows into Express HTTP response.
+  // Avoids JSON serialization and buffering to prevent memory exhaustion.
+  // =========================================================================
+  static async exportCsvStream(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const validatedQuery = employeeQuerySchema.parse(req.query);
+      const filename = `employees_stream_${new Date().toISOString().slice(0, 10)}.csv`;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+
+      await EmployeeService.streamExportEmployeesCsv(validatedQuery, res);
+    } catch (err: any) {
+      if (err.name === 'ZodError') {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid query parameters',
+            details: err.errors,
+          },
+        });
+        return;
+      }
+      next(err);
+    }
+  }
+
 }

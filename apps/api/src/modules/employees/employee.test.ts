@@ -164,6 +164,45 @@ describe('Employee Module API', () => {
     });
   });
 
+  // =========================================================================
+  // BACKEND-GENERATED CSV STREAMING (OPTIMIZED FOR LARGE DATASETS: 100k - 1M+ ROWS)
+  // Streams chunks directly into the HTTP response socket to maintain O(1) memory.
+  // =========================================================================
+  describe('GET /api/employees/export-csv (Server-Side CSV Stream for Large Datasets)', () => {
+    it('rejects unauthenticated server CSV stream request with 401', async () => {
+      const response = await request(app).get('/api/employees/export-csv');
+      expect(response.status).toBe(401);
+    });
+
+    it('streams CSV directly with text/csv headers and attachment disposition', async () => {
+      const response = await request(app)
+        .get('/api/employees/export-csv')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/csv');
+      expect(response.headers['content-disposition']).toContain('attachment');
+      expect(response.headers['content-disposition']).toContain('.csv');
+
+      const lines = response.text.trim().split('\n');
+      expect(lines[0]).toBe('Employee Code,First Name,Last Name,Email,Department,Job Title,Country,Status,Hire Date');
+      expect(lines.length).toBeGreaterThan(1);
+    });
+
+    it('streams CSV rows respecting filter parameters', async () => {
+      const response = await request(app)
+        .get('/api/employees/export-csv?department=Engineering')
+        .set('Authorization', `Bearer ${authToken}`);
+
+      expect(response.status).toBe(200);
+      const lines = response.text.trim().split('\n');
+      expect(lines.length).toBeGreaterThan(1);
+      for (let i = 1; i < lines.length; i++) {
+        expect(lines[i]).toContain('Engineering');
+      }
+    });
+  });
+
 
   describe('GET /api/employees/facets', () => {
     it('should return distinct metadata facets for filters', async () => {

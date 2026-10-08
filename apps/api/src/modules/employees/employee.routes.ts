@@ -11,6 +11,10 @@ employeeRouter.use(requireAuth);
 employeeRouter.get('/', EmployeeController.list);
 employeeRouter.get('/facets', EmployeeController.getFacets);
 employeeRouter.get('/export', EmployeeController.exportEmployee);
+
+// Backend-generated CSV streaming export (optimized for large datasets: 100k - 1M+ rows)
+employeeRouter.get('/export-csv', EmployeeController.exportCsvStream);
+
 employeeRouter.get('/:id', EmployeeController.getById);
 
 // Compensation adjustment & history (Only HR_ADMIN can modify salaries)
